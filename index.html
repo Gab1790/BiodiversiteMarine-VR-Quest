@@ -9,9 +9,9 @@
   <style>
     #info-overlay {
       position: fixed;
-      bottom: 800px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       background: rgba(0, 20, 60, 0.88);
       color: #e0f4ff;
       border: 1px solid #00aaff55;
@@ -50,8 +50,8 @@
   </div>
 
   <a-scene
-    webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
+    webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking, hit-test"
+    renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true"
     fog="type: exponential; color: #001a3a; density: 0.01"
     background="color: #00008B"
   >
@@ -115,6 +115,7 @@
           this.el.addEventListener('click',      () => this.show());
         },
         show() {
+          clearTimeout(this._hideTimer);
           const d = ANIMALS[this.data];
           if (!d) return;
           this.nameEl.textContent = d.name;
@@ -122,7 +123,10 @@
           this.overlay.style.display = 'block';
         },
         hide() {
-          this.overlay.style.display = 'none';
+          clearTimeout(this._hideTimer);
+          this._hideTimer = setTimeout(() => {
+            this.overlay.style.display = 'none';
+          }, 3000);
         }
       });
 
@@ -230,7 +234,7 @@
     <!-- ══════════════════════════════════════════════════
          LIGHTING
     ══════════════════════════════════════════════════ -->
-    <a-light type="ambient"      color="#0a2a4a" intensity="2.5"></a-light>
+    <a-light id="ambient-light" type="ambient" color="#0a2a4a" intensity="2.5"></a-light>
     <a-light type="directional"  color="#4488ff" intensity="1.5" position="1 3 -2"></a-light>
     <a-light type="point"        color="#00aaff" intensity="1.5" position="0 4 0"
              animation="property: position; to: 0 4 0; dir: alternate; loop: true; dur: 4000; easing: easeInOutSine">
@@ -239,7 +243,7 @@
     <!-- ══════════════════════════════════════════════════
          SEA FLOOR
     ══════════════════════════════════════════════════ -->
-    <a-plane position="0 -4 0" rotation="-90 0 0" width="80" height="80"
+    <a-plane id="sea-floor" position="0 -4 0" rotation="-90 0 0" width="80" height="80"
              material="color: #0d2b1a; roughness: 1; metalness: 0">
     </a-plane>
     <!-- Sand details -->
@@ -312,7 +316,7 @@
     <!-- ══════════════════════════════════════════════════
          CAUSTIC LIGHT RAYS
     ══════════════════════════════════════════════════ -->
-    <a-entity position="0 5 0">
+    <a-entity id="caustic-rays" position="0 5 0">
       <a-plane position="0 0 0"   rotation="0 10 0"  width="0.6" height="12"
                material="color: #88ccff; opacity: 0.06; transparent: true; side: double; shader: flat"
                animation="property: opacity; from: 0.04; to: 0.10; dir: alternate; loop: true; dur: 3000"></a-plane>
@@ -331,7 +335,7 @@
          ★ DOLPHINS (×3)
     ══════════════════════════════════════════════════ -->
     <!-- Dolphin 1 -->
-    <a-entity swim="radius: 8; speed: 0.55; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
+    <a-entity swim="radius: 8; speed: 0.35; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
               animal-info="dolphin" class="clickable"
               position="8 0 0">
       <!-- Body -->
@@ -360,7 +364,7 @@
     </a-entity>
 
     <!-- Dolphin 2 (faster, smaller orbit) -->
-    <a-entity swim="radius: 6; speed: 0.7; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
+    <a-entity swim="radius: 6; speed: 0.45; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
               animal-info="dolphin" class="clickable"
               position="6 0.5 0">
       <a-ellipsoid width="0.48" height="0.26" depth="0.26" color="#4d7f9e"></a-ellipsoid>
@@ -382,7 +386,7 @@
     </a-entity>
 
     <!-- Dolphin 3 (leaping higher) -->
-    <a-entity swim="radius: 10; speed: 0.45; yOffset: 1.0; yAmplitude: 1.2; tilt: 20"
+    <a-entity swim="radius: 10; speed: 0.29; yOffset: 1.0; yAmplitude: 1.2; tilt: 20"
               animal-info="dolphin" class="clickable"
               position="10 1 0">
       <a-ellipsoid width="0.52" height="0.29" depth="0.29" color="#6699bb"></a-ellipsoid>
@@ -406,7 +410,7 @@
     <!-- ══════════════════════════════════════════════════
          ★ WHALE (humpback)
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 14; speed: 0.22; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
+    <a-entity swim="radius: 14; speed: 0.14; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
               animal-info="whale" class="clickable"
               position="14 0 0">
       <!-- Main body (large elongated) -->
@@ -443,7 +447,7 @@
     <!-- ══════════════════════════════════════════════════
          ★ GREAT WHITE SHARK
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 11; speed: 0.42; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
+    <a-entity swim="radius: 11; speed: 0.27; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
               animal-info="shark" class="clickable"
               position="11 -1 0">
       <!-- Body (torpedo) -->
@@ -482,7 +486,7 @@
     <!-- ══════════════════════════════════════════════════
          ★ SEA TURTLE
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 7; speed: 0.3; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
+    <a-entity swim="radius: 7; speed: 0.19; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
               animal-info="turtle" class="clickable"
               position="7 -1.5 0">
       <!-- Shell (carapace) -->
@@ -517,7 +521,7 @@
     <!-- ══════════════════════════════════════════════════
          ★ OCTOPUS
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 5; speed: 0.25; yOffset: -2.5; yAmplitude: 0.4; tilt: 8"
+    <a-entity swim="radius: 5; speed: 0.16; yOffset: -2.5; yAmplitude: 0.4; tilt: 8"
               animal-info="octopus" class="clickable"
               position="5 -2.5 0">
       <!-- Mantle -->
@@ -579,7 +583,7 @@
     </a-entity>
 
     <!-- Clown fish 1 -->
-    <a-entity swim="radius: 0.6; speed: 1.8; yOffset: -3.0; yAmplitude: 0.12; tilt: 15"
+    <a-entity swim="radius: 0.6; speed: 1.15; yOffset: -3.0; yAmplitude: 0.12; tilt: 15"
               animal-info="clownfish" class="clickable"
               position="-4 -3.0 -5">
       <a-ellipsoid width="0.18" height="0.1" depth="0.08" color="#ff5500"></a-ellipsoid>
@@ -594,7 +598,7 @@
     </a-entity>
 
     <!-- Clown fish 2 -->
-    <a-entity swim="radius: 0.7; speed: 2.0; yOffset: -2.85; yAmplitude: 0.14; tilt: 18"
+    <a-entity swim="radius: 0.7; speed: 1.3; yOffset: -2.85; yAmplitude: 0.14; tilt: 18"
               animal-info="clownfish" class="clickable"
               position="-3.8 -2.85 -5.2">
       <a-ellipsoid width="0.16" height="0.09" depth="0.07" color="#ff4400"></a-ellipsoid>
@@ -608,7 +612,7 @@
     <!-- ══════════════════════════════════════════════════
          ★ MANTA RAY
     ══════════════════════════════════════════════════ -->
-    <a-entity ray-glide="speed: 0.28; scaleX: 12; scaleZ: 7"
+    <a-entity ray-glide="speed: 0.18; scaleX: 12; scaleZ: 7"
               animal-info="ray" class="clickable"
               position="0 -1.0 0">
       <!-- Central disc body (flat ellipsoid) -->
@@ -642,7 +646,7 @@
          ★ SMALL FISH SCHOOL (generic colorful fish)
     ══════════════════════════════════════════════════ -->
     <a-entity id="fish-school"
-              swim="radius: 4.5; speed: 0.9; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
+              swim="radius: 4.5; speed: 0.58; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
               position="4 -0.8 0">
       <!-- 7 small fish offset around centre -->
       <a-entity position=" 0.0  0.0  0.0" animal-info="clownfish" class="clickable">
@@ -677,7 +681,7 @@
     ══════════════════════════════════════════════════ -->
     <!-- Jellyfish 1 -->
     <a-entity position="-3 1.5 -3"
-              swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
+              swim="radius: 3; speed: 0.13; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
               animal-info="octopus" class="clickable">
       <!-- Bell -->
       <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
@@ -703,7 +707,7 @@
 
     <!-- Jellyfish 2 -->
     <a-entity position="3 2.0 4"
-              swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
+              swim="radius: 4; speed: 0.12; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
               animal-info="octopus" class="clickable">
       <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
                 jelly-pulse="speed: 2.0"
@@ -797,6 +801,115 @@
         roughness:'material.roughness',
         metalness:'material.metalness'
       }
+    });
+  </script>
+  <!-- ══════════════════════════════════════════════════
+       AMBIENT SOUND + AR DETECTION
+  ══════════════════════════════════════════════════ -->
+  <script>
+    /* ---- Underwater ambient sound (Web Audio API) ---- */
+    let ambientStarted = false;
+    function startAmbientSound() {
+      if (ambientStarted) return;
+      ambientStarted = true;
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+
+      const master = ctx.createGain();
+      master.gain.value = 0.55;
+      master.connect(ctx.destination);
+
+      /* --- Ocean noise layer (low-pass filtered white noise) --- */
+      const bufferSize = ctx.sampleRate * 4;
+      const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const nd = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) nd[i] = Math.random() * 2 - 1;
+
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+      noiseSource.loop = true;
+
+      const lpf = ctx.createBiquadFilter();
+      lpf.type = 'lowpass';
+      lpf.frequency.value = 350;
+      lpf.Q.value = 1.2;
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.value = 0.35;
+
+      /* LFO for slow wave-like volume swell */
+      const lfo = ctx.createOscillator();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.12;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.12;
+      lfo.connect(lfoGain);
+      lfoGain.connect(noiseGain.gain);
+
+      noiseSource.connect(lpf);
+      lpf.connect(noiseGain);
+      noiseGain.connect(master);
+
+      /* --- Deep rumble oscillator --- */
+      const rumble = ctx.createOscillator();
+      rumble.type = 'sine';
+      rumble.frequency.value = 48;
+      const rumbleLFO = ctx.createOscillator();
+      rumbleLFO.type = 'sine';
+      rumbleLFO.frequency.value = 0.08;
+      const rumbleLFOGain = ctx.createGain();
+      rumbleLFOGain.gain.value = 12;
+      rumbleLFO.connect(rumbleLFOGain);
+      rumbleLFOGain.connect(rumble.frequency);
+      const rumbleGain = ctx.createGain();
+      rumbleGain.gain.value = 0.18;
+      rumble.connect(rumbleGain);
+      rumbleGain.connect(master);
+
+      noiseSource.start();
+      lfo.start();
+      rumble.start();
+      rumbleLFO.start();
+    }
+
+    /* Start on first user interaction (browser autoplay policy) */
+    ['click', 'touchstart', 'keydown'].forEach(function(evt) {
+      document.addEventListener(evt, startAmbientSound, { once: true });
+    });
+
+    /* Also start when entering VR/AR */
+    document.querySelector('a-scene').addEventListener('enter-vr', startAmbientSound);
+
+    /* ---- AR mode detection ---- */
+    const scene = document.querySelector('a-scene');
+
+    scene.addEventListener('enter-vr', function() {
+      const xrSession = this.xrSession;
+      if (!xrSession) return;
+      const blendMode = xrSession.environmentBlendMode;
+      if (blendMode === 'alpha-blend' || blendMode === 'additive') {
+        /* AR passthrough mode: remove opaque background and underwater fog */
+        this.removeAttribute('fog');
+        this.setAttribute('background', 'transparent: true');
+        document.getElementById('sea-floor').setAttribute('visible', 'false');
+        document.getElementById('caustic-rays').setAttribute('visible', 'false');
+        document.getElementById('bubbles').setAttribute('visible', 'false');
+        /* Brighten ambient light for AR */
+        const ambientLight = document.getElementById('ambient-light');
+        if (ambientLight) ambientLight.setAttribute('light', 'color: #ffffff; intensity: 1.5');
+      }
+    });
+
+    scene.addEventListener('exit-vr', function() {
+      /* Restore VR/desktop settings */
+      this.setAttribute('fog', 'type: exponential; color: #001a3a; density: 0.01');
+      this.setAttribute('background', 'color: #00008B');
+      document.getElementById('sea-floor').setAttribute('visible', 'true');
+      document.getElementById('caustic-rays').setAttribute('visible', 'true');
+      document.getElementById('bubbles').setAttribute('visible', 'true');
+      const ambientLight = document.getElementById('ambient-light');
+      if (ambientLight) ambientLight.setAttribute('light', 'color: #0a2a4a; intensity: 2.5');
     });
   </script>
 </body>
