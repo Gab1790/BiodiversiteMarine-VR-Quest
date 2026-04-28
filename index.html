@@ -97,6 +97,10 @@
         ray: {
           name: "🦩 Raie Manta (Mobula birostris)",
           text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau rapporté à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
+        },
+        jellyfish: {
+          name: "🪼 Méduse (Scyphozoa)",
+          text: "Invertébré marin gélatineux sans cerveau ni cœur, composé à 95 % d'eau. Se déplace en contractant sa cloche pour expulser l'eau. Ses tentacules urticants paralysent les proies (zooplancton, petits poissons). Certaines espèces sont biologiquement immortelles (Turritopsis dohrnii). Présente dans tous les océans."
         }
       };
 
@@ -771,7 +775,7 @@
     <!-- Jellyfish 1 -->
     <a-entity position="-3 1.5 -3"
               swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="octopus" class="clickable">
+              animal-info="jellyfish" class="clickable">
       <!-- Bell -->
       <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
                 jelly-pulse="speed: 1.8"
@@ -797,7 +801,7 @@
     <!-- Jellyfish 2 -->
     <a-entity position="3 2.0 4"
               swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="octopus" class="clickable">
+              animal-info="jellyfish" class="clickable">
       <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
                 jelly-pulse="speed: 2.0"
                 material="transparent: true; side: double"></a-sphere>
