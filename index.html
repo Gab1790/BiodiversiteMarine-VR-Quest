@@ -40,10 +40,31 @@
       font-size: 13px;
       z-index: 998;
     }
+    #speed-control {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 20, 60, 0.8);
+      color: #e0f4ff;
+      border: 1px solid #00aaff55;
+      border-radius: 10px;
+      padding: 12px;
+      font-family: 'Segoe UI', sans-serif;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #speed-control label { font-size: 12px; font-weight: bold; color: #00d4ff; }
+    #speed-slider { cursor: pointer; width: 120px; }
   </style>
 </head>
 <body>
   <div id="ui-hint">🎯 Regardez un animal pour lire sa fiche · [VR] appuyez sur le bouton Quest</div>
+  <div id="speed-control">
+    <label for="speed-slider">Vitesse des animaux</label>
+    <input type="range" id="speed-slider" min="0" max="3" step="0.1" value="1">
+  </div>
   <div id="info-overlay">
     <h2 id="info-name"></h2>
     <p id="info-text"></p>
@@ -67,6 +88,17 @@
          CUSTOM COMPONENTS
     ══════════════════════════════════════════════════ -->
     <script>
+      /* ---- Global Speed Control ---- */
+      window.speedMultiplier = 1.0;
+      window.addEventListener('DOMContentLoaded', () => {
+        const slider = document.getElementById('speed-slider');
+        if (slider) {
+          slider.addEventListener('input', (e) => {
+            window.speedMultiplier = parseFloat(e.target.value);
+          });
+        }
+      });
+
       /* ---- Animal info data ---- */
       const ANIMALS = {
         dolphin: {
@@ -141,7 +173,7 @@
         },
         tick(t, dt) {
           const s = this.data;
-          this.angle += (s.speed * dt) / 1000;
+          this.angle += (s.speed * dt * window.speedMultiplier) / 1000;
           const x  = Math.cos(this.angle) * s.radius;
           const z  = Math.sin(this.angle) * s.radius;
           const y  = this.baseY + Math.sin(this.angle * 1.5) * s.yAmplitude;
@@ -155,8 +187,10 @@
       /* ---- Tail wag component ---- */
       AFRAME.registerComponent('tail-wag', {
         schema: { speed: { default: 3 }, amplitude: { default: 20 } },
-        tick(t) {
-          const angle = Math.sin(t / 1000 * this.data.speed) * this.data.amplitude;
+        init() { this.acc = 0; },
+        tick(t, dt) {
+          this.acc += (dt * window.speedMultiplier) / 1000;
+          const angle = Math.sin(this.acc * this.data.speed) * this.data.amplitude;
           this.el.setAttribute('rotation', { x: 0, y: angle, z: 0 });
         }
       });
@@ -174,7 +208,7 @@
         },
         tick(t, dt) {
           const pos = this.el.getAttribute('position');
-          pos.y += this.data.speed * dt / 1000;
+          pos.y += this.data.speed * dt * window.speedMultiplier / 1000;
           if (pos.y > 6) {
             pos.y = this.startY;
             pos.x = (Math.random() - 0.5) * 20;
@@ -187,8 +221,10 @@
       /* ---- Jellyfish pulse ---- */
       AFRAME.registerComponent('jelly-pulse', {
         schema: { speed: { default: 1.5 } },
-        tick(t) {
-          const s = 0.9 + Math.sin(t / 1000 * this.data.speed) * 0.1;
+        init() { this.acc = 0; },
+        tick(t, dt) {
+          this.acc += (dt * window.speedMultiplier) / 1000;
+          const s = 0.9 + Math.sin(this.acc * this.data.speed) * 0.1;
           this.el.setAttribute('scale', `${s} ${s} ${s}`);
         }
       });
@@ -197,11 +233,12 @@
       AFRAME.registerComponent('ray-glide', {
         schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 } },
         init() {
-          this.t0 = Math.random() * Math.PI * 2;
+          this.acc = Math.random() * Math.PI * 2;
           this.baseY = parseFloat(this.el.getAttribute('position').y) || -1;
         },
-        tick(t) {
-          const a  = t / 1000 * this.data.speed + this.t0;
+        tick(t, dt) {
+          this.acc += (dt * window.speedMultiplier * this.data.speed) / 1000;
+          const a  = this.acc;
           const x  = Math.sin(a) * this.data.scaleX;
           const z  = Math.sin(a * 2) * this.data.scaleZ;
           const y  = this.baseY + Math.sin(a * 0.7) * 0.4;
