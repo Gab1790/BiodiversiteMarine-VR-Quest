@@ -50,10 +50,9 @@
   </div>
 
   <a-scene
-    ambient-ocean
     webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
-    renderer="colorManagement: true"
-    fog="type: exponential; color: #001a3a; density: 0.02"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
+    fog="type: exponential; color: #001a3a; density: 0.04"
     background="color: #001a3a"
   >
     <!-- ══════════════════════════════════════════════════
@@ -108,21 +107,12 @@
       AFRAME.registerComponent('animal-info', {
         schema: { type: 'string', default: '' },
         init() {
-          this._hideTimer = null;
           this.overlay = document.getElementById('info-overlay');
           this.nameEl  = document.getElementById('info-name');
           this.textEl  = document.getElementById('info-text');
-          this.el.addEventListener('mouseenter', () => {
-            clearTimeout(this._hideTimer);
-            this.show();
-          });
-          this.el.addEventListener('mouseleave', () => {
-            this._hideTimer = setTimeout(() => this.hide(), 120);
-          });
-          this.el.addEventListener('click', () => {
-            clearTimeout(this._hideTimer);
-            this.show();
-          });
+          this.el.addEventListener('mouseenter', () => this.show());
+          this.el.addEventListener('mouseleave', () => this.hide());
+          this.el.addEventListener('click',      () => this.show());
         },
         show() {
           const d = ANIMALS[this.data];
@@ -220,89 +210,6 @@
           this.el.setAttribute('rotation', { x: 0, y: heading, z: 0 });
         }
       });
-
-      /* ---- Ambient ocean sound (procedural Web Audio) ---- */
-      AFRAME.registerComponent('ambient-ocean', {
-        init() {
-          this._started = false;
-          const unlock = () => {
-            if (this._started) return;
-            this._started = true;
-            this._buildAudio();
-          };
-          // Unlock on first user interaction or VR session start
-          document.addEventListener('click',      unlock, { once: true });
-          document.addEventListener('touchstart', unlock, { once: true });
-          this.el.addEventListener('enter-vr',    unlock, { once: true });
-        },
-
-        _buildAudio() {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          if (ctx.state === 'suspended') ctx.resume();
-
-          /* Master volume */
-          const master = ctx.createGain();
-          master.gain.value = 0.55;
-          master.connect(ctx.destination);
-
-          /* Shared white-noise buffer (8 s) */
-          const sr  = ctx.sampleRate;
-          const buf = ctx.createBuffer(1, sr * 8, sr);
-          const d   = buf.getChannelData(0);
-          for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-
-          /* 1 — Deep underwater rumble: low-pass filtered noise */
-          const rumble = ctx.createBufferSource();
-          rumble.buffer = buf; rumble.loop = true;
-          const lpRumble = ctx.createBiquadFilter();
-          lpRumble.type = 'lowpass'; lpRumble.frequency.value = 90; lpRumble.Q.value = 1.8;
-          const gRumble = ctx.createGain(); gRumble.gain.value = 0.4;
-          rumble.connect(lpRumble); lpRumble.connect(gRumble); gRumble.connect(master);
-          rumble.start();
-
-          /* 2 — Water-current flow: band-pass filtered noise */
-          const flow = ctx.createBufferSource();
-          flow.buffer = buf; flow.loop = true; flow.playbackRate.value = 0.97;
-          const bpFlow = ctx.createBiquadFilter();
-          bpFlow.type = 'bandpass'; bpFlow.frequency.value = 360; bpFlow.Q.value = 0.45;
-          const gFlow = ctx.createGain(); gFlow.gain.value = 0.14;
-          flow.connect(bpFlow); bpFlow.connect(gFlow); gFlow.connect(master);
-          flow.start();
-
-          /* 3 — Sub-bass pressure hum with slow LFO modulation */
-          const hum = ctx.createOscillator();
-          hum.type = 'sine'; hum.frequency.value = 48;
-          const lfo = ctx.createOscillator();
-          lfo.frequency.value = 0.07;
-          const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.04;
-          const gHum = ctx.createGain(); gHum.gain.value = 0.2;
-          lfo.connect(lfoGain); lfoGain.connect(gHum.gain);
-          hum.connect(gHum); gHum.connect(master);
-          hum.start(); lfo.start();
-
-          /* 4 — Random bubble pops */
-          const bubble = () => {
-            const osc  = ctx.createOscillator();
-            osc.type = 'sine';
-            const f0 = 500 + Math.random() * 600;
-            osc.frequency.setValueAtTime(f0, ctx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(f0 * 0.28, ctx.currentTime + 0.18);
-            const g = ctx.createGain();
-            g.gain.setValueAtTime(0.11, ctx.currentTime);
-            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.22);
-            osc.connect(g); g.connect(master);
-            osc.start(); osc.stop(ctx.currentTime + 0.26);
-            setTimeout(bubble, 700 + Math.random() * 3800);
-          };
-          setTimeout(bubble, 400 + Math.random() * 1500);
-
-          this._ctx = ctx;
-        },
-
-        remove() {
-          if (this._ctx) { this._ctx.close(); this._ctx = null; }
-        }
-      });
     </script>
 
     <!-- ══════════════════════════════════════════════════
@@ -313,7 +220,6 @@
         <a-cursor
           fuse="true"
           fuse-timeout="1500"
-          raycaster="objects: .clickable; recursive: true"
           geometry="primitive: ring; radiusInner: 0.018; radiusOuter: 0.026"
           material="color: white; shader: flat; opacity: 0.85"
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
@@ -324,14 +230,11 @@
     <!-- ══════════════════════════════════════════════════
          LIGHTING
     ══════════════════════════════════════════════════ -->
-    <a-light type="ambient"      color="#4488cc" intensity="2.5"></a-light>
-    <a-light type="directional"  color="#88bbff" intensity="1.8" position="1 3 -2"></a-light>
-    <a-light type="directional"  color="#6699ee" intensity="1.0" position="-2 2 3"></a-light>
-    <a-light type="point"        color="#44aaff" intensity="3.5" position="0 4 0"
+    <a-light type="ambient"      color="#0a2a4a" intensity="0.6"></a-light>
+    <a-light type="directional"  color="#4488ff" intensity="0.5" position="1 3 -2"></a-light>
+    <a-light type="point"        color="#00aaff" intensity="0.8" position="0 4 0"
              animation="property: position; to: 0 4 0; dir: alternate; loop: true; dur: 4000; easing: easeInOutSine">
     </a-light>
-    <a-light type="point"        color="#2288dd" intensity="2.0" position="8 2 0"></a-light>
-    <a-light type="point"        color="#2288dd" intensity="2.0" position="-8 2 0"></a-light>
 
     <!-- ══════════════════════════════════════════════════
          SEA FLOOR
@@ -775,7 +678,7 @@
     <!-- Jellyfish 1 -->
     <a-entity position="-3 1.5 -3"
               swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="jellyfish" class="clickable">
+              animal-info="octopus" class="clickable">
       <!-- Bell -->
       <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
                 jelly-pulse="speed: 1.8"
@@ -801,7 +704,7 @@
     <!-- Jellyfish 2 -->
     <a-entity position="3 2.0 4"
               swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="jellyfish" class="clickable">
+              animal-info="octopus" class="clickable">
       <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
                 jelly-pulse="speed: 2.0"
                 material="transparent: true; side: double"></a-sphere>
