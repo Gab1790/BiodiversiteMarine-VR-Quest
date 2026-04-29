@@ -6,7 +6,7 @@ Expérience de réalité virtuelle WebXR immersive sur la biodiversité marine, 
 
 - 🌊 **Monde sous-marin** complet : fond marin, coraux, algues, rayons de lumière (caustiques), bulles remontantes et plancton
 - 🐾 **7 espèces animées** :
-  - 🐬 Grand Dauphin × 3 (nage en orbite, nageoires caudale animée)
+  - 🐬 Grand Dauphin × 3 (nage en orbite, nageoire caudale animée)
   - 🐋 Baleine à Bosse (grande envergure, longues nageoires pectorales)
   - 🦈 Grand Requin Blanc (nage en profondeur)
   - 🐢 Tortue Verte (nageoires battantes)
