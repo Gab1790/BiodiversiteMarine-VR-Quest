@@ -156,7 +156,7 @@
         setupPanel() {
           if (this.panelAppended) return;
           this.refreshText();
-          const minScaleThreshold = 0.0001; // Prevent division by zero when scale approaches 0.
+          const minScaleThreshold = 0.0001; // Prevents division by zero when scale approaches 0.
           const panelOffsetScale = 0.7;
           const panelOffsetPadding = 0.5;
           const panelHeightScale = 0.35;
@@ -212,7 +212,7 @@
           this._applied = true;
           const { saturation, lightness } = this.data;
           const lowSaturationThreshold = 0.1;
-          const lowSaturationMultiplier = 0.4; // Softer boost for near-neutral colors to avoid harsh tints.
+          const lowSaturationMultiplier = 0.4; // softer boost for near-neutral colors to avoid harsh tints.
           this.el.object3D.traverse((obj) => {
             if (obj.el && obj.el.dataset && obj.el.dataset.ui === 'info') return;
             if (!obj.isMesh || !obj.material) return;
