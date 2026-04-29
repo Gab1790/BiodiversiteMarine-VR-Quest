@@ -14,7 +14,7 @@ Expérience de réalité virtuelle WebXR immersive sur la biodiversité marine, 
   - 🐠 Poissons Clown × banc de 5 (autour d'une anémone animée)
   - 🦩 Raie Manta (vol plané en figure 8, ailes battantes)
   - 🪼 Méduses × 2 (pulsation translucide)
-- 📋 **Fiche explicative** pour chaque animal : regardez-le 1,5 s (fuse cursor) ou cliquez pour lire
+- 📋 **Fiche explicative** pour chaque animal : regardez-le 1,5 s (fuse cursor) ou cliquez pour afficher sa fiche à côté de lui
 - 🗂️ **Panneau légende** flottant dans la scène
 
 ## 🚀 Démarrage rapide
@@ -34,8 +34,8 @@ npx serve .
 
 | Action | Résultat |
 |--------|----------|
-| Regarder un animal ≥ 1,5 s | Affiche la fiche (desktop / regard) |
-| Clic / trigger | Affiche la fiche instantanément |
+| Regarder un animal ≥ 1,5 s | Affiche la fiche à côté de l'animal (desktop / regard) |
+| Clic / trigger | Affiche la fiche instantanément à côté de l'animal |
 | WASD + souris | Déplacement libre (desktop) |
 | Manettes Quest | Locomotion WebXR standard |
 
