@@ -75,7 +75,7 @@
         },
         whale: {
           name: "🐋 Baleine à Bosse (Megaptera novaeangliae)",
-          text: "Cétacé baleen mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
+          text: "Cétacé à fanons mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
         },
         shark: {
           name: "🦈 Grand Requin Blanc (Carcharodon carcharias)",
@@ -95,7 +95,7 @@
         },
         ray: {
           name: "🦩 Raie Manta (Mobula birostris)",
-          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau rapporté à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
+          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau par rapport à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
         },
         jellyfish: {
           name: "🪼 Méduse (Scyphozoa)",
@@ -564,7 +564,7 @@
     </a-entity>
 
     <!-- ══════════════════════════════════════════════════
-         ★ CLOWN FISH (×3 around a coral anemone)
+         ★ CLOWN FISH (×2 around a coral anemone)
     ══════════════════════════════════════════════════ -->
     <!-- Anemone base -->
     <a-entity position="-4 -3.0 -5">
@@ -648,7 +648,7 @@
     <a-entity id="fish-school"
               swim="radius: 4.5; speed: 0.58; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
               position="4 -0.8 0">
-      <!-- 7 small fish offset around centre -->
+      <!-- 5 small fish offset around centre -->
       <a-entity position=" 0.0  0.0  0.0" animal-info="clownfish" class="clickable">
         <a-ellipsoid width="0.14" height="0.07" depth="0.06" color="#ffcc00"></a-ellipsoid>
         <a-cone color="#ffaa00" radius-bottom="0.04" radius-top="0.01" height="0.07" position="0 0 0.08" rotation="-90 0 0"></a-cone>
@@ -682,7 +682,7 @@
     <!-- Jellyfish 1 -->
     <a-entity position="-3 1.5 -3"
               swim="radius: 3; speed: 0.13; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="octopus" class="clickable">
+              animal-info="jellyfish" class="clickable">
       <!-- Bell -->
       <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
                 jelly-pulse="speed: 1.8"
@@ -708,7 +708,7 @@
     <!-- Jellyfish 2 -->
     <a-entity position="3 2.0 4"
               swim="radius: 4; speed: 0.12; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="octopus" class="clickable">
+              animal-info="jellyfish" class="clickable">
       <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
                 jelly-pulse="speed: 2.0"
                 material="transparent: true; side: double"></a-sphere>
@@ -732,14 +732,9 @@
     <a-entity position="0 1.8 -4">
       <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88"
                material="transparent: true"></a-plane>
-      <a-text value="🌊 Bienvenue dans\nla Biodiversite Marine VR\n\nRegardez un animal pour\ndécouvrir sa fiche."
+      <a-text value="🌊 Bienvenue dans\nla Biodiversité Marine VR\n\nRegardez un animal pour\ndécouvrir sa fiche."
               align="center" color="#00d4ff" width="2.8" position="0 0 0.01"
               font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
-    </a-entity>
-
-    <!-- Dolphin info panel -->
-    <a-entity position="8 2.5 0"
-              animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; dur: 30000; easing: linear">
     </a-entity>
 
     <!-- Legend panel (right side) -->
@@ -747,7 +742,7 @@
       <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85"
                material="transparent: true"></a-plane>
       <a-text
-        value="🐬 Dauphin\n🐋 Baleine à bosse\n🦈 Grand requin blanc\n🐢 Tortue verte\n🐙 Pieuvre\n🐠 Poisson clown\n🦩 Raie manta"
+        value="🐬 Dauphin\n🐋 Baleine à bosse\n🦈 Grand requin blanc\n🐢 Tortue verte\n🐙 Pieuvre\n🐠 Poisson clown\n🦩 Raie manta\n🪼 Méduse"
         align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01"
         line-height="50"
         font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
