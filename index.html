@@ -161,14 +161,9 @@
           const worldScale = new THREE.Vector3();
           this.el.object3D.getWorldScale(worldScale);
           const safeScale = new THREE.Vector3(
-            worldScale.x ?? 1,
-            worldScale.y ?? 1,
-            worldScale.z ?? 1
-          );
-          safeScale.set(
-            Math.max(Math.abs(safeScale.x), 0.0001),
-            Math.max(Math.abs(safeScale.y), 0.0001),
-            Math.max(Math.abs(safeScale.z), 0.0001)
+            Math.max(Math.abs(worldScale.x), 0.0001),
+            Math.max(Math.abs(worldScale.y), 0.0001),
+            Math.max(Math.abs(worldScale.z), 0.0001)
           );
           const localSize = new THREE.Vector3(
             size.x / safeScale.x,
@@ -214,8 +209,8 @@
           const lowSaturationThreshold = 0.1;
           const lowSaturationMultiplier = 0.4;
           this.el.object3D.traverse((obj) => {
-            if (!obj.isMesh || !obj.material) return;
             if (obj.el && obj.el.dataset && obj.el.dataset.ui === 'info') return;
+            if (!obj.isMesh || !obj.material) return;
             const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
             materials.forEach((material) => {
               if (!material || !material.color) return;
