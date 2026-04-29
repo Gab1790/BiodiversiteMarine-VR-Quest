@@ -81,15 +81,17 @@
 
       /* ---- Face camera component ---- */
       AFRAME.registerComponent('face-camera', {
+        init() {
+          this.camPos = new THREE.Vector3();
+          this.objPos = new THREE.Vector3();
+        },
         tick() {
           const camera = this.el.sceneEl.camera;
           if (!camera) return;
-          const camPos = new THREE.Vector3();
-          const objPos = new THREE.Vector3();
-          camera.getWorldPosition(camPos);
-          this.el.object3D.getWorldPosition(objPos);
-          camPos.y = objPos.y;
-          this.el.object3D.lookAt(camPos);
+          camera.getWorldPosition(this.camPos);
+          this.el.object3D.getWorldPosition(this.objPos);
+          this.camPos.y = this.objPos.y;
+          this.el.object3D.lookAt(this.camPos);
         }
       });
 
