@@ -156,22 +156,27 @@
         setupPanel() {
           if (this.panelAppended) return;
           this.refreshText();
+          const minScaleThreshold = 0.0001; // Prevent division by zero when scale approaches 0.
+          const panelOffsetScale = 0.7;
+          const panelOffsetPadding = 0.5;
+          const panelHeightScale = 0.35;
+          const panelHeightPadding = 0.3;
           const bbox = new THREE.Box3().setFromObject(this.el.object3D);
           const size = bbox.getSize(new THREE.Vector3());
           const worldScale = new THREE.Vector3();
           this.el.object3D.getWorldScale(worldScale);
           const safeScale = new THREE.Vector3(
-            Math.max(Math.abs(worldScale.x), 0.0001),
-            Math.max(Math.abs(worldScale.y), 0.0001),
-            Math.max(Math.abs(worldScale.z), 0.0001)
+            Math.max(Math.abs(worldScale.x), minScaleThreshold),
+            Math.max(Math.abs(worldScale.y), minScaleThreshold),
+            Math.max(Math.abs(worldScale.z), minScaleThreshold)
           );
           const localSize = new THREE.Vector3(
             size.x / safeScale.x,
             size.y / safeScale.y,
             size.z / safeScale.z
           );
-          const offsetX = Math.max(localSize.x, localSize.z) * 0.7 + 0.5;
-          const offsetY = localSize.y * 0.35 + 0.3;
+          const offsetX = Math.max(localSize.x, localSize.z) * panelOffsetScale + panelOffsetPadding;
+          const offsetY = localSize.y * panelHeightScale + panelHeightPadding;
           this.panel.setAttribute('position', `${offsetX} ${offsetY} 0`);
           this.el.appendChild(this.panel);
           this.panelAppended = true;
@@ -207,7 +212,7 @@
           this._applied = true;
           const { saturation, lightness } = this.data;
           const lowSaturationThreshold = 0.1;
-          const lowSaturationMultiplier = 0.4;
+          const lowSaturationMultiplier = 0.4; // Softer boost for near-neutral colors to avoid harsh tints.
           this.el.object3D.traverse((obj) => {
             if (obj.el && obj.el.dataset && obj.el.dataset.ui === 'info') return;
             if (!obj.isMesh || !obj.material) return;
