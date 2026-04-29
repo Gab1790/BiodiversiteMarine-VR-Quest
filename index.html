@@ -160,7 +160,16 @@
           const size = bbox.getSize(new THREE.Vector3());
           const worldScale = new THREE.Vector3();
           this.el.object3D.getWorldScale(worldScale);
-          const safeScale = new THREE.Vector3(worldScale.x || 1, worldScale.y || 1, worldScale.z || 1);
+          const safeScale = new THREE.Vector3(
+            worldScale.x ?? 1,
+            worldScale.y ?? 1,
+            worldScale.z ?? 1
+          );
+          safeScale.set(
+            Math.max(Math.abs(safeScale.x), 0.0001),
+            Math.max(Math.abs(safeScale.y), 0.0001),
+            Math.max(Math.abs(safeScale.z), 0.0001)
+          );
           const localSize = new THREE.Vector3(
             size.x / safeScale.x,
             size.y / safeScale.y,
@@ -202,6 +211,8 @@
           if (this._applied) return;
           this._applied = true;
           const { saturation, lightness } = this.data;
+          const lowSaturationThreshold = 0.1;
+          const lowSaturationMultiplier = 0.4;
           this.el.object3D.traverse((obj) => {
             if (!obj.isMesh || !obj.material) return;
             if (obj.el && obj.el.dataset && obj.el.dataset.ui === 'info') return;
@@ -210,7 +221,9 @@
               if (!material || !material.color) return;
               const hsl = { h: 0, s: 0, l: 0 };
               material.color.getHSL(hsl);
-              const sBoost = hsl.s > 0.1 ? saturation : saturation * 0.4;
+              const sBoost = hsl.s > lowSaturationThreshold
+                ? saturation
+                : saturation * lowSaturationMultiplier;
               material.color.setHSL(
                 hsl.h,
                 Math.min(1, hsl.s + sBoost),
