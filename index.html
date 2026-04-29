@@ -331,6 +331,7 @@
         <a-cursor
           fuse="true"
           fuse-timeout="1500"
+          raycaster="objects: .clickable"
           geometry="primitive: ring; radiusInner: 0.018; radiusOuter: 0.026"
           material="color: white; shader: flat; opacity: 0.85"
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
