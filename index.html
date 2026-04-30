@@ -183,6 +183,11 @@
         },
         hide() {
           clearTimeout(this._hideTimer);
+          // Extract camera right vector (column 0 of matrixWorld), projected horizontally.
+          const camera = this.el.sceneEl.camera;
+          if (!camera) return;
+          const e = camera.matrixWorld.elements;
+          this._cameraRight.set(e[0], 0, e[2]).normalize();
           this._hideTimer = setTimeout(() => {
             if (this.panel) {
               this.panel.setAttribute('visible', 'false');
@@ -192,6 +197,7 @@
       });
 
       /* ---- Color boost component ---- */
+      this.panelVisible = true;
       AFRAME.registerComponent('color-boost', {
         schema: { saturation: { default: 0.2 }, lightness: { default: 0.08 } },
         init() {
@@ -947,26 +953,6 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://unpkg.com/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
   <style>
-    #info-overlay {
-      position: fixed;
-      bottom: 400px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 20, 60, 0.88);
-      color: #e0f4ff;
-      border: 1px solid #00aaff55;
-      border-radius: 14px;
-      padding: 16px 24px;
-      max-width: 420px;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
-      display: none;
-      z-index: 999;
-      pointer-events: none;
-    }
-    #info-overlay h2 { margin: 0 0 6px; font-size: 18px; color: #00d4ff; }
-    #info-overlay p  { margin: 0; }
     #ui-hint {
       position: fixed;
       top: 406px;
@@ -983,15 +969,11 @@
   </style>
 </head>
 <body>
-  <div id="ui-hint">🎯 Regardez un animal pour lire sa fiche · [VR] appuyez sur le bouton Quest</div>
-  <div id="info-overlay">
-    <h2 id="info-name"></h2>
-    <p id="info-text"></p>
-  </div>
+  <div id="ui-hint">🎯 Regardez un animal pour afficher sa fiche à côté de lui · [VR] appuyez sur le bouton Quest</div>
 
   <a-scene
-    webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
-    renderer="colorManagement: true; physicallyCorrectLights: true"
+    webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking, hit-test"
+    renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true"
     fog="type: exponential; color: #001a3a; density: 0.01"
     background="color: #00008B"
   >
@@ -1015,7 +997,7 @@
         },
         whale: {
           name: "🐋 Baleine à Bosse (Megaptera novaeangliae)",
-          text: "Cétacé baleen mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
+          text: "Cétacé à fanons mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
         },
         shark: {
           name: "🦈 Grand Requin Blanc (Carcharodon carcharias)",
@@ -1035,7 +1017,7 @@
         },
         ray: {
           name: "🦩 Raie Manta (Mobula birostris)",
-          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau rapporté à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
+          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau par rapport à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
         },
         jellyfish: {
           name: "🪼 Méduse (Scyphozoa)",
@@ -1043,26 +1025,161 @@
         }
       };
 
+      /* ---- Face camera component ---- */
+      AFRAME.registerComponent('face-camera', {
+        init() {
+          this.camPos = new THREE.Vector3();
+          this.objPos = new THREE.Vector3();
+        },
+        tick() {
+          const camera = this.el.sceneEl.camera;
+          if (!camera) return;
+          camera.getWorldPosition(this.camPos);
+          this.el.object3D.getWorldPosition(this.objPos);
+          this.camPos.y = this.objPos.y;
+          this.el.object3D.lookAt(this.camPos);
+        }
+      });
+
       /* ---- Info panel component ---- */
       AFRAME.registerComponent('animal-info', {
         schema: { type: 'string', default: '' },
         init() {
-          this.overlay = document.getElementById('info-overlay');
-          this.nameEl  = document.getElementById('info-name');
-          this.textEl  = document.getElementById('info-text');
+          this.panelAppended = false;
+          this.panel = this.buildPanel();
           this.el.addEventListener('mouseenter', () => this.show());
           this.el.addEventListener('mouseleave', () => this.hide());
           this.el.addEventListener('click',      () => this.show());
+          if (this.el.hasLoaded) {
+            this.setupPanel();
+          } else {
+            this.el.addEventListener('loaded', () => this.setupPanel());
+          }
+        },
+        update() {
+          this.refreshText();
+        },
+        buildPanel() {
+          const panel = document.createElement('a-entity');
+          panel.setAttribute('visible', 'false');
+          panel.setAttribute('face-camera', '');
+          panel.dataset.ui = 'info';
+
+          const bg = document.createElement('a-plane');
+          bg.dataset.ui = 'info';
+          bg.setAttribute('width', '2.0');
+          bg.setAttribute('height', '1.25');
+          bg.setAttribute('material', 'color: #001a3a; opacity: 0.88; transparent: true; side: double');
+          panel.appendChild(bg);
+
+          this.nameEl = document.createElement('a-text');
+          this.nameEl.dataset.ui = 'info';
+          this.nameEl.setAttribute('color', '#00d4ff');
+          this.nameEl.setAttribute('align', 'left');
+          this.nameEl.setAttribute('width', '1.85');
+          this.nameEl.setAttribute('wrap-count', '28');
+          this.nameEl.setAttribute('position', '-0.92 0.5 0.01');
+          this.nameEl.setAttribute('font', 'dejavu');
+          panel.appendChild(this.nameEl);
+
+          this.textEl = document.createElement('a-text');
+          this.textEl.dataset.ui = 'info';
+          this.textEl.setAttribute('color', '#e0f4ff');
+          this.textEl.setAttribute('align', 'left');
+          this.textEl.setAttribute('width', '1.85');
+          this.textEl.setAttribute('wrap-count', '44');
+          this.textEl.setAttribute('line-height', '50');
+          this.textEl.setAttribute('position', '-0.92 0.25 0.01');
+          this.textEl.setAttribute('font', 'dejavu');
+          panel.appendChild(this.textEl);
+
+          return panel;
+        },
+        refreshText() {
+          const d = ANIMALS[this.data];
+          if (!d || !this.nameEl || !this.textEl) return;
+          this.nameEl.setAttribute('value', d.name);
+          this.textEl.setAttribute('value', d.text);
+        },
+        setupPanel() {
+          if (this.panelAppended) return;
+          this.refreshText();
+          const minScaleThreshold = 0.0001; // Prevent division by zero when scale approaches 0.
+          const panelOffsetScale = 0.7;
+          const panelOffsetPadding = 0.5;
+          const panelHeightScale = 0.35;
+          const panelHeightPadding = 0.3;
+          const bbox = new THREE.Box3().setFromObject(this.el.object3D);
+          const size = bbox.getSize(new THREE.Vector3());
+          const worldScale = new THREE.Vector3();
+          this.el.object3D.getWorldScale(worldScale);
+          const safeScale = new THREE.Vector3(
+            Math.max(Math.abs(worldScale.x), minScaleThreshold),
+            Math.max(Math.abs(worldScale.y), minScaleThreshold),
+            Math.max(Math.abs(worldScale.z), minScaleThreshold)
+          );
+          const localSize = new THREE.Vector3(
+            size.x / safeScale.x,
+            size.y / safeScale.y,
+            size.z / safeScale.z
+          );
+          const offsetX = Math.max(localSize.x, localSize.z) * panelOffsetScale + panelOffsetPadding;
+          const offsetY = localSize.y * panelHeightScale + panelHeightPadding;
+          this.panel.setAttribute('position', `${offsetX} ${offsetY} 0`);
+          this.el.appendChild(this.panel);
+          this.panelAppended = true;
         },
         show() {
-          const d = ANIMALS[this.data];
-          if (!d) return;
-          this.nameEl.textContent = d.name;
-          this.textEl.textContent = d.text;
-          this.overlay.style.display = 'block';
+          clearTimeout(this._hideTimer);
+          this.setupPanel();
+          this.panel.setAttribute('visible', 'true');
         },
         hide() {
-          this.overlay.style.display = 'none';
+          clearTimeout(this._hideTimer);
+          this._hideTimer = setTimeout(() => {
+            if (this.panel) {
+              this.panel.setAttribute('visible', 'false');
+            }
+          }, 3000);
+        }
+      });
+
+      /* ---- Color boost component ---- */
+      AFRAME.registerComponent('color-boost', {
+        schema: { saturation: { default: 0.2 }, lightness: { default: 0.08 } },
+        init() {
+          this.apply = this.apply.bind(this);
+          if (this.el.hasLoaded) {
+            this.apply();
+          } else {
+            this.el.addEventListener('loaded', this.apply);
+          }
+        },
+        apply() {
+          if (this._applied) return;
+          this._applied = true;
+          const { saturation, lightness } = this.data;
+          const lowSaturationThreshold = 0.1;
+          const lowSaturationMultiplier = 0.4; // Softer boost for near-neutral colors to avoid harsh tints.
+          this.el.object3D.traverse((obj) => {
+            if (obj.el && obj.el.dataset && obj.el.dataset.ui === 'info') return;
+            if (!obj.isMesh || !obj.material) return;
+            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+            materials.forEach((material) => {
+              if (!material || !material.color) return;
+              const hsl = { h: 0, s: 0, l: 0 };
+              material.color.getHSL(hsl);
+              const sBoost = hsl.s > lowSaturationThreshold
+                ? saturation
+                : saturation * lowSaturationMultiplier;
+              material.color.setHSL(
+                hsl.h,
+                Math.min(1, hsl.s + sBoost),
+                Math.min(1, hsl.l + lightness)
+              );
+              material.needsUpdate = true;
+            });
+          });
         }
       });
 
@@ -1160,6 +1277,7 @@
         <a-cursor
           fuse="true"
           fuse-timeout="1500"
+          raycaster="objects: .clickable"
           geometry="primitive: ring; radiusInner: 0.018; radiusOuter: 0.026"
           material="color: white; shader: flat; opacity: 0.85"
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
@@ -1170,16 +1288,16 @@
     <!-- ══════════════════════════════════════════════════
          LIGHTING
     ══════════════════════════════════════════════════ -->
-    <a-light type="ambient"      color="#0a2a4a" intensity="0.9"></a-light>
-    <a-light type="directional"  color="#4488ff" intensity="0.7" position="1 3 -2"></a-light>
-    <a-light type="point"        color="#00aaff" intensity="0.9" position="0 4 0"
+    <a-light id="ambient-light" type="ambient" color="#0a2a4a" intensity="2.5"></a-light>
+    <a-light type="directional"  color="#4488ff" intensity="1.5" position="1 3 -2"></a-light>
+    <a-light type="point"        color="#00aaff" intensity="1.5" position="0 4 0"
              animation="property: position; to: 0 4 0; dir: alternate; loop: true; dur: 4000; easing: easeInOutSine">
     </a-light>
 
     <!-- ══════════════════════════════════════════════════
          SEA FLOOR
     ══════════════════════════════════════════════════ -->
-    <a-plane position="0 -4 0" rotation="-90 0 0" width="80" height="80"
+    <a-plane id="sea-floor" position="0 -4 0" rotation="-90 0 0" width="80" height="80"
              material="color: #0d2b1a; roughness: 1; metalness: 0">
     </a-plane>
     <!-- Sand details -->
@@ -1252,7 +1370,7 @@
     <!-- ══════════════════════════════════════════════════
          CAUSTIC LIGHT RAYS
     ══════════════════════════════════════════════════ -->
-    <a-entity position="0 5 0">
+    <a-entity id="caustic-rays" position="0 5 0">
       <a-plane position="0 0 0"   rotation="0 10 0"  width="0.6" height="12"
                material="color: #88ccff; opacity: 0.06; transparent: true; side: double; shader: flat"
                animation="property: opacity; from: 0.04; to: 0.10; dir: alternate; loop: true; dur: 3000"></a-plane>
@@ -1271,9 +1389,9 @@
          ★ DOLPHINS (×3)
     ══════════════════════════════════════════════════ -->
     <!-- Dolphin 1 -->
-    <a-entity swim="radius: 8; speed: 0.55; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
-              animal-info="dolphin" class="clickable"
-              position="8 0 0">
+    <a-entity swim="radius: 8; speed: 0.35; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
+              animal-info="dolphin" color-boost class="clickable"
+              position="8 0 0" scale="1.4 1.4 1.4">
       <!-- Body -->
       <a-ellipsoid width="0.5" height="0.28" depth="0.28" color="#5588aa"
                    position="0 0 0"></a-ellipsoid>
@@ -1300,9 +1418,9 @@
     </a-entity>
 
     <!-- Dolphin 2 (faster, smaller orbit) -->
-    <a-entity swim="radius: 6; speed: 0.7; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
-              animal-info="dolphin" class="clickable"
-              position="6 0.5 0">
+    <a-entity swim="radius: 6; speed: 0.45; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
+              animal-info="dolphin" color-boost class="clickable"
+              position="6 0.5 0" scale="1.4 1.4 1.4">
       <a-ellipsoid width="0.48" height="0.26" depth="0.26" color="#4d7f9e"></a-ellipsoid>
       <a-cone color="#426e8a" radius-bottom="0.065" radius-top="0.02" height="0.26"
               position="0 0 -0.36" rotation="90 0 0"></a-cone>
@@ -1322,9 +1440,9 @@
     </a-entity>
 
     <!-- Dolphin 3 (leaping higher) -->
-    <a-entity swim="radius: 10; speed: 0.45; yOffset: 1.0; yAmplitude: 1.2; tilt: 20"
-              animal-info="dolphin" class="clickable"
-              position="10 1 0">
+    <a-entity swim="radius: 10; speed: 0.29; yOffset: 1.0; yAmplitude: 1.2; tilt: 20"
+              animal-info="dolphin" color-boost class="clickable"
+              position="10 1 0" scale="1.4 1.4 1.4">
       <a-ellipsoid width="0.52" height="0.29" depth="0.29" color="#6699bb"></a-ellipsoid>
       <a-cone color="#5588aa" radius-bottom="0.07" radius-top="0.02" height="0.3"
               position="0 0 -0.39" rotation="90 0 0"></a-cone>
@@ -1346,9 +1464,9 @@
     <!-- ══════════════════════════════════════════════════
          ★ WHALE (humpback)
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 14; speed: 0.22; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
-              animal-info="whale" class="clickable"
-              position="14 0 0">
+    <a-entity swim="radius: 14; speed: 0.14; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
+              animal-info="whale" color-boost class="clickable"
+              position="14 0 0" scale="1.25 1.25 1.25">
       <!-- Main body (large elongated) -->
       <a-ellipsoid width="4.0" height="1.1" depth="1.1" color="#2a3a55"></a-ellipsoid>
       <!-- Head bulge -->
@@ -1383,9 +1501,9 @@
     <!-- ══════════════════════════════════════════════════
          ★ GREAT WHITE SHARK
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 11; speed: 0.42; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
-              animal-info="shark" class="clickable"
-              position="11 -1 0">
+    <a-entity swim="radius: 11; speed: 0.27; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
+              animal-info="shark" color-boost class="clickable"
+              position="11 -1 0" scale="1.35 1.35 1.35">
       <!-- Body (torpedo) -->
       <a-ellipsoid width="2.4" height="0.55" depth="0.55" color="#7a8a99"></a-ellipsoid>
       <!-- Snout cone -->
@@ -1422,9 +1540,9 @@
     <!-- ══════════════════════════════════════════════════
          ★ SEA TURTLE
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 7; speed: 0.3; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
-              animal-info="turtle" class="clickable"
-              position="7 -1.5 0">
+    <a-entity swim="radius: 7; speed: 0.19; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
+              animal-info="turtle" color-boost class="clickable"
+              position="7 -1.5 0" scale="1.45 1.45 1.45">
       <!-- Shell (carapace) -->
       <a-ellipsoid width="0.55" height="0.22" depth="0.7" color="#3a6620"></a-ellipsoid>
       <!-- Shell pattern -->
@@ -1457,9 +1575,9 @@
     <!-- ══════════════════════════════════════════════════
          ★ OCTOPUS
     ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 5; speed: 0.25; yOffset: -2.5; yAmplitude: 0.4; tilt: 8"
-              animal-info="octopus" class="clickable"
-              position="5 -2.5 0">
+    <a-entity swim="radius: 5; speed: 0.16; yOffset: -2.5; yAmplitude: 0.4; tilt: 8"
+              animal-info="octopus" color-boost class="clickable"
+              position="5 -2.5 0" scale="1.5 1.5 1.5">
       <!-- Mantle -->
       <a-ellipsoid width="0.45" height="0.55" depth="0.4" color="#cc3300"
                    jelly-pulse="speed: 1.0"></a-ellipsoid>
@@ -1500,7 +1618,7 @@
     </a-entity>
 
     <!-- ══════════════════════════════════════════════════
-         ★ CLOWN FISH (×3 around a coral anemone)
+         ★ CLOWN FISH (×2 around a coral anemone)
     ══════════════════════════════════════════════════ -->
     <!-- Anemone base -->
     <a-entity position="-4 -3.0 -5">
@@ -1519,9 +1637,9 @@
     </a-entity>
 
     <!-- Clown fish 1 -->
-    <a-entity swim="radius: 0.6; speed: 1.8; yOffset: -3.0; yAmplitude: 0.12; tilt: 15"
-              animal-info="clownfish" class="clickable"
-              position="-4 -3.0 -5">
+    <a-entity swim="radius: 0.6; speed: 1.15; yOffset: -3.0; yAmplitude: 0.12; tilt: 15"
+              animal-info="clownfish" color-boost class="clickable"
+              position="-4 -3.0 -5" scale="1.6 1.6 1.6">
       <a-ellipsoid width="0.18" height="0.1" depth="0.08" color="#ff5500"></a-ellipsoid>
       <!-- White stripes -->
       <a-box width="0.05" height="0.11" depth="0.09" color="#ffffff" position="-0.03 0 0"></a-box>
@@ -1534,9 +1652,9 @@
     </a-entity>
 
     <!-- Clown fish 2 -->
-    <a-entity swim="radius: 0.7; speed: 2.0; yOffset: -2.85; yAmplitude: 0.14; tilt: 18"
-              animal-info="clownfish" class="clickable"
-              position="-3.8 -2.85 -5.2">
+    <a-entity swim="radius: 0.7; speed: 1.3; yOffset: -2.85; yAmplitude: 0.14; tilt: 18"
+              animal-info="clownfish" color-boost class="clickable"
+              position="-3.8 -2.85 -5.2" scale="1.6 1.6 1.6">
       <a-ellipsoid width="0.16" height="0.09" depth="0.07" color="#ff4400"></a-ellipsoid>
       <a-box width="0.045" height="0.10" depth="0.08" color="#ffffff" position="-0.025 0 0"></a-box>
       <a-box width="0.035" height="0.09" depth="0.08" color="#ffffff" position=" 0.055 0 0"></a-box>
@@ -1548,9 +1666,9 @@
     <!-- ══════════════════════════════════════════════════
          ★ MANTA RAY
     ══════════════════════════════════════════════════ -->
-    <a-entity ray-glide="speed: 0.28; scaleX: 12; scaleZ: 7"
-              animal-info="ray" class="clickable"
-              position="0 -1.0 0">
+    <a-entity ray-glide="speed: 0.18; scaleX: 12; scaleZ: 7"
+              animal-info="ray" color-boost class="clickable"
+              position="0 -1.0 0" scale="1.4 1.4 1.4">
       <!-- Central disc body (flat ellipsoid) -->
       <a-ellipsoid width="0.6" height="0.12" depth="1.0" color="#223344"></a-ellipsoid>
       <!-- Cephalic horns (head fins) -->
@@ -1582,9 +1700,9 @@
          ★ SMALL FISH SCHOOL (generic colorful fish)
     ══════════════════════════════════════════════════ -->
     <a-entity id="fish-school"
-              swim="radius: 4.5; speed: 0.9; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
-              position="4 -0.8 0">
-      <!-- 7 small fish offset around centre -->
+              swim="radius: 4.5; speed: 0.58; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
+              position="4 -0.8 0" color-boost scale="1.6 1.6 1.6">
+      <!-- 5 small fish offset around centre -->
       <a-entity position=" 0.0  0.0  0.0" animal-info="clownfish" class="clickable">
         <a-ellipsoid width="0.14" height="0.07" depth="0.06" color="#ffcc00"></a-ellipsoid>
         <a-cone color="#ffaa00" radius-bottom="0.04" radius-top="0.01" height="0.07" position="0 0 0.08" rotation="-90 0 0"></a-cone>
@@ -1617,8 +1735,8 @@
     ══════════════════════════════════════════════════ -->
     <!-- Jellyfish 1 -->
     <a-entity position="-3 1.5 -3"
-              swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="octopus" class="clickable">
+              swim="radius: 3; speed: 0.13; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
+              animal-info="jellyfish" color-boost class="clickable" scale="1.5 1.5 1.5">
       <!-- Bell -->
       <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
                 jelly-pulse="speed: 1.8"
@@ -1643,8 +1761,8 @@
 
     <!-- Jellyfish 2 -->
     <a-entity position="3 2.0 4"
-              swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="octopus" class="clickable">
+              swim="radius: 4; speed: 0.12; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
+              animal-info="jellyfish" color-boost class="clickable" scale="1.5 1.5 1.5">
       <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
                 jelly-pulse="speed: 2.0"
                 material="transparent: true; side: double"></a-sphere>
@@ -1670,12 +1788,7 @@
                material="transparent: true"></a-plane>
       <a-text value="🌊 Bienvenue dans\nla Biodiversité Marine VR\n\nRegardez un animal pour\ndécouvrir sa fiche."
               align="center" color="#00d4ff" width="2.8" position="0 0 0.01"
-              font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
-    </a-entity>
-
-    <!-- Dolphin info panel -->
-    <a-entity position="8 2.5 0"
-              animation="property: rotation; from: 0 0 0; to: 0 360 0; loop: true; dur: 30000; easing: linear">
+              font="dejavu"></a-text>
     </a-entity>
 
     <!-- Legend panel (right side) -->
@@ -1683,10 +1796,10 @@
       <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85"
                material="transparent: true"></a-plane>
       <a-text
-        value="🐬 Dauphin\n🐋 Baleine à bosse\n🦈 Grand requin blanc\n🐢 Tortue verte\n🐙 Pieuvre\n🐠 Poisson clown\n🦩 Raie manta"
+        value="🐬 Dauphin\n🐋 Baleine à bosse\n🦈 Grand requin blanc\n🐢 Tortue verte\n🐙 Pieuvre\n🐠 Poisson clown\n🦩 Raie manta\n🪼 Méduse"
         align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01"
         line-height="50"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+        font="dejavu"></a-text>
     </a-entity>
 
     <!-- ══════════════════════════════════════════════════
@@ -1728,4 +1841,16 @@
     // Register <a-ellipsoid> as a primitive
     AFRAME.registerPrimitive('a-ellipsoid', {
       defaultComponents: { geometry: { primitive: 'ellipsoid' }, material: {} },
-      mappings
+      mappings: {
+        width:    'geometry.width',
+        height:   'geometry.height',
+        depth:    'geometry.depth',
+        color:    'material.color',
+        opacity:  'material.opacity',
+        roughness:'material.roughness',
+        metalness:'material.metalness'
+      }
+    });
+  </script>
+</body>
+</html>
