@@ -135,33 +135,48 @@
           this._panelPos = new THREE.Vector3();
           this._panelOffsetX = 0.5;
           this._panelOffsetY = 0.5;
-          console.log('animal-info: init', this.el.tagName, this.el.getAttribute && this.el.getAttribute('animal-info'));
-          this.el.addEventListener('mouseenter', () => this.show());
-          this.el.addEventListener('mouseleave', () => this.hide());
-          this.el.addEventListener('click',      () => this.show());
-          // Pointer and touch events to support mobile (Chrome) and various input types
-          this.el.addEventListener('pointerenter', () => this.show());
-          this.el.addEventListener('pointerleave', () => this.hide());
-          this.el.addEventListener('pointerdown',  () => this.show());
-          this.el.addEventListener('pointerup',    () => this.hide());
-          this.el.addEventListener('touchstart', (e) => { e.stopPropagation(); this.show(); }, { passive: true });
-          this.el.addEventListener('touchend',   (e) => { e.stopPropagation(); this.hide(); }, { passive: true });
-          this.el.addEventListener('raycaster-intersected', () => {
-            this._isIntersected = true;
-            this.show();
-          });
-          this.el.addEventListener('raycaster-intersected-cleared', () => {
-            this._isIntersected = false;
-            this.hide();
-          });
+          this._interactionBound = false;
+          this.bindInteractionListeners(this.el);
+          this.bindInteractionTargets();
           if (this.el.hasLoaded) {
             this.setupPanel();
           } else {
-            this.el.addEventListener('loaded', () => this.setupPanel());
+            this.el.addEventListener('loaded', () => {
+              this.setupPanel();
+              this.bindInteractionTargets();
+            });
           }
         },
+        bindInteractionListeners(target) {
+          target.addEventListener('mouseenter', () => this.show());
+          target.addEventListener('mouseleave', () => this.hide());
+          target.addEventListener('click',      () => this.show());
+          target.addEventListener('pointerenter', () => this.show());
+          target.addEventListener('pointerleave', () => this.hide());
+          target.addEventListener('pointerdown',  () => this.show());
+          target.addEventListener('pointerup',    () => this.hide());
+          target.addEventListener('touchstart', (e) => { e.stopPropagation(); this.show(); }, { passive: true });
+          target.addEventListener('touchend',   (e) => { e.stopPropagation(); this.hide(); }, { passive: true });
+          target.addEventListener('raycaster-intersected', () => {
+            this._isIntersected = true;
+            this.show();
+          });
+          target.addEventListener('raycaster-intersected-cleared', () => {
+            this._isIntersected = false;
+            this.hide();
+          });
+        },
+        bindInteractionTargets() {
+          if (this._interactionBound) return;
+          this._interactionBound = true;
+          this.el.classList.add('clickable');
+          const children = this.el.querySelectorAll('*');
+          children.forEach((child) => {
+            child.classList.add('clickable');
+            this.bindInteractionListeners(child);
+          });
+        },
         update() {
-          console.log('animal-info: update', this.data);
           this.refreshText();
         },
         buildPanel() {
@@ -261,7 +276,6 @@
         },
         syncFallbackOverlay() {
           const d = ANIMALS[this.data];
-          console.log('animal-info: syncFallbackOverlay', this.data, !!d);
           if (!d || !this.fallbackTitleEl || !this.fallbackTextEl) return;
           this.fallbackTitleEl.textContent = d.name;
           this.fallbackTextEl.textContent = d.text;
@@ -269,7 +283,6 @@
         showFallbackOverlay() {
           this.fallbackOverlay = this.fallbackOverlay || this.buildFallbackOverlay();
           if (!this.fallbackOverlay) return;
-          console.log('animal-info: showFallbackOverlay', this.data);
           this.syncFallbackOverlay();
           this.fallbackOverlay.style.display = 'block';
         },
@@ -280,14 +293,7 @@
         },
         refreshText() {
           const d = ANIMALS[this.data];
-          if (!d) {
-            console.warn('animal-info: no data for key', this.data);
-            return;
-          }
-          if (!this.nameEl || !this.textEl) {
-            console.warn('animal-info: missing DOM targets', !!this.nameEl, !!this.textEl);
-            return;
-          }
+          if (!d || !this.nameEl || !this.textEl) return;
           this.nameEl.setAttribute('value', d.name);
           this.textEl.setAttribute('value', d.text);
           if (this.hudTitleEl && this.hudTextEl) {
@@ -349,7 +355,6 @@
           this.panel.object3D.position.copy(this._panelPos);
         },
         show() {
-          console.log('animal-info: show called', this.data);
           clearTimeout(this._hideTimer);
           this.setupPanel();
           this.setupHud();
@@ -360,7 +365,6 @@
         },
         hide() {
           if (this._isIntersected) return;
-          console.log('animal-info: hide called', this.data);
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
             if (this.panel) {
