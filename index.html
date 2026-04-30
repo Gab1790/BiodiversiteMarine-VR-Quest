@@ -119,18 +119,11 @@
       AFRAME.registerComponent('animal-info', {
         schema: { type: 'string', default: '' },
         init() {
-          this.panelAppended = false;
-          this.hudAppended = false;
-          this.fallbackOverlay = null;
-          this.fallbackTitleEl = null;
-          this.fallbackTextEl = null;
+          this.shared = this.ensureSharedPanel();
           this.panelVisible = false;
           this._isIntersected = false;
-          this.panel = this.buildPanel();
-          this.hud = this.buildHud();
           this._animalWorldPos = new THREE.Vector3();
           this._cameraWorldPos = new THREE.Vector3();
-          this._cameraRight = new THREE.Vector3();
           this._panelDirection = new THREE.Vector3();
           this._panelPos = new THREE.Vector3();
           this._panelOffsetX = 0.5;
@@ -138,31 +131,82 @@
           this._interactionBound = false;
           this.bindInteractionListeners(this.el);
           this.bindInteractionTargets();
-          const scene = this.el.sceneEl;
-          if (scene) {
-            scene.addEventListener('enter-vr', () => this.hideFallbackOverlay());
-            scene.addEventListener('exit-vr', () => this.hideAllSceneInfo());
-          }
           if (this.el.hasLoaded) {
-            this.bindInteractionTargets();
-            this.hideAllSceneInfo();
+            this.computeOffsets();
           } else {
             this.el.addEventListener('loaded', () => {
               this.bindInteractionTargets();
-              this.hideAllSceneInfo();
+              this.computeOffsets();
             });
           }
         },
-        hideAllSceneInfo() {
-          this.panelVisible = false;
-          if (this.panel) this.panel.setAttribute('visible', 'false');
-          if (this.hud) this.hud.setAttribute('visible', 'false');
+        ensureSharedPanel() {
           const scene = this.el.sceneEl;
-          if (!scene) return;
-          const infos = scene.querySelectorAll('[data-ui="info"]');
-          infos.forEach((el) => {
-            if (el && el.setAttribute) el.setAttribute('visible', 'false');
-          });
+          if (!scene) return null;
+          if (scene.__animalInfoShared) return scene.__animalInfoShared;
+
+          const panel = document.createElement('a-entity');
+          panel.setAttribute('visible', 'false');
+          panel.setAttribute('face-camera', '');
+
+          const bg = document.createElement('a-plane');
+          bg.setAttribute('width', '1.8');
+          bg.setAttribute('height', '1.15');
+          bg.setAttribute('material', 'color: #001a3a; opacity: 0.9; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
+          panel.appendChild(bg);
+
+          const titleEl = document.createElement('a-text');
+          titleEl.setAttribute('color', '#00d4ff');
+          titleEl.setAttribute('align', 'left');
+          titleEl.setAttribute('width', '1.65');
+          titleEl.setAttribute('wrap-count', '28');
+          titleEl.setAttribute('position', '-0.8 0.45 0.01');
+          titleEl.setAttribute('font', 'dejavu');
+          titleEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
+          panel.appendChild(titleEl);
+
+          const textEl = document.createElement('a-text');
+          textEl.setAttribute('color', '#e0f4ff');
+          textEl.setAttribute('align', 'left');
+          textEl.setAttribute('width', '1.65');
+          textEl.setAttribute('wrap-count', '40');
+          textEl.setAttribute('line-height', '50');
+          textEl.setAttribute('position', '-0.8 0.18 0.01');
+          textEl.setAttribute('font', 'dejavu');
+          textEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
+          panel.appendChild(textEl);
+
+          panel.object3D.renderOrder = 1100;
+          scene.appendChild(panel);
+
+          scene.__animalInfoShared = {
+            panel,
+            titleEl,
+            textEl,
+            activeEl: null
+          };
+          return scene.__animalInfoShared;
+        },
+        computeOffsets() {
+          const bbox = new THREE.Box3().setFromObject(this.el.object3D);
+          const size = bbox.getSize(new THREE.Vector3());
+          this._panelOffsetX = Math.max(size.x, size.z) * 0.7 + 0.5;
+          this._panelOffsetY = size.y * 0.35 + 0.3;
+        },
+        hideSharedPanel() {
+          if (!this.shared || !this.shared.panel) return;
+          this.panelVisible = false;
+          if (this.shared.activeEl === this.el) {
+            this.shared.activeEl = null;
+            this.shared.panel.setAttribute('visible', 'false');
+          }
+        },
+        setSharedText() {
+          if (!this.shared) return;
+          const d = ANIMALS[this.data];
+          if (!d) return;
+          this.shared.titleEl.setAttribute('value', d.name);
+          this.shared.textEl.setAttribute('value', d.text);
         },
         bindInteractionListeners(target) {
           target.addEventListener('mouseenter', () => this.show());
@@ -194,169 +238,17 @@
           });
         },
         update() {
-          this.refreshText();
-        },
-        buildPanel() {
-          const panel = document.createElement('a-entity');
-          panel.setAttribute('visible', 'false');
-          panel.setAttribute('face-camera', '');
-          panel.dataset.ui = 'info';
-
-          const bg = document.createElement('a-plane');
-          bg.dataset.ui = 'info';
-          bg.setAttribute('width', '2.0');
-          bg.setAttribute('height', '1.25');
-          bg.setAttribute('material', 'color: #001a3a; opacity: 0.88; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
-          panel.appendChild(bg);
-
-          this.nameEl = document.createElement('a-text');
-          this.nameEl.dataset.ui = 'info';
-          this.nameEl.setAttribute('color', '#00d4ff');
-          this.nameEl.setAttribute('align', 'left');
-          this.nameEl.setAttribute('width', '1.85');
-          this.nameEl.setAttribute('wrap-count', '28');
-          this.nameEl.setAttribute('position', '-0.92 0.5 0.01');
-          this.nameEl.setAttribute('font', 'dejavu');
-          this.nameEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
-          panel.appendChild(this.nameEl);
-
-          this.textEl = document.createElement('a-text');
-          this.textEl.dataset.ui = 'info';
-          this.textEl.setAttribute('color', '#e0f4ff');
-          this.textEl.setAttribute('align', 'left');
-          this.textEl.setAttribute('width', '1.85');
-          this.textEl.setAttribute('wrap-count', '44');
-          this.textEl.setAttribute('line-height', '50');
-          this.textEl.setAttribute('position', '-0.92 0.25 0.01');
-          this.textEl.setAttribute('font', 'dejavu');
-          this.textEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
-          panel.appendChild(this.textEl);
-
-          return panel;
-        },
-        buildHud() {
-          const hud = document.createElement('a-entity');
-          hud.setAttribute('visible', 'false');
-          hud.dataset.ui = 'info';
-          hud.setAttribute('position', '0 -0.38 -1.15');
-
-          const bg = document.createElement('a-plane');
-          bg.dataset.ui = 'info';
-          bg.setAttribute('width', '2.35');
-          bg.setAttribute('height', '0.78');
-          bg.setAttribute('material', 'color: #001a3a; opacity: 0.92; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
-          hud.appendChild(bg);
-
-          this.hudTitleEl = document.createElement('a-text');
-          this.hudTitleEl.dataset.ui = 'info';
-          this.hudTitleEl.setAttribute('color', '#7fe8ff');
-          this.hudTitleEl.setAttribute('align', 'left');
-          this.hudTitleEl.setAttribute('width', '2.15');
-          this.hudTitleEl.setAttribute('wrap-count', '28');
-          this.hudTitleEl.setAttribute('position', '-1.08 0.24 0.01');
-          this.hudTitleEl.setAttribute('font', 'dejavu');
-          this.hudTitleEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
-          hud.appendChild(this.hudTitleEl);
-
-          this.hudTextEl = document.createElement('a-text');
-          this.hudTextEl.dataset.ui = 'info';
-          this.hudTextEl.setAttribute('color', '#e0f4ff');
-          this.hudTextEl.setAttribute('align', 'left');
-          this.hudTextEl.setAttribute('width', '2.15');
-          this.hudTextEl.setAttribute('wrap-count', '40');
-          this.hudTextEl.setAttribute('line-height', '48');
-          this.hudTextEl.setAttribute('position', '-1.08 -0.03 0.01');
-          this.hudTextEl.setAttribute('font', 'dejavu');
-          this.hudTextEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
-          hud.appendChild(this.hudTextEl);
-
-          return hud;
-        },
-        buildFallbackOverlay() {
-          const existing = document.getElementById('animal-fallback-overlay');
-          if (existing) return existing;
-
-          const overlay = document.createElement('div');
-          overlay.id = 'animal-fallback-overlay';
-          overlay.style.cssText = 'position:fixed;left:24px;bottom:24px;width:min(420px,calc(100vw - 48px));max-height:40vh;overflow:auto;padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,rgba(0,26,58,0.96),rgba(0,14,34,0.94));box-shadow:0 14px 40px rgba(0,0,0,0.35);color:#e0f4ff;font-family:Segoe UI, Arial, sans-serif;z-index:2000;display:none;pointer-events:auto;backdrop-filter:blur(10px);border:1px solid rgba(127,232,255,0.25);';
-
-          this.fallbackTitleEl = document.createElement('div');
-          this.fallbackTitleEl.style.cssText = 'color:#7fe8ff;font-weight:700;font-size:18px;line-height:1.2;margin-bottom:8px;';
-          overlay.appendChild(this.fallbackTitleEl);
-
-          this.fallbackTextEl = document.createElement('div');
-          this.fallbackTextEl.style.cssText = 'font-size:14px;line-height:1.45;white-space:pre-wrap;';
-          overlay.appendChild(this.fallbackTextEl);
-
-          document.body.appendChild(overlay);
-          return overlay;
-        },
-        syncFallbackOverlay() {
-          const d = ANIMALS[this.data];
-          if (!d || !this.fallbackTitleEl || !this.fallbackTextEl) return;
-          this.fallbackTitleEl.textContent = d.name;
-          this.fallbackTextEl.textContent = d.text;
-        },
-        showFallbackOverlay() {
-          this.fallbackOverlay = this.fallbackOverlay || this.buildFallbackOverlay();
-          if (!this.fallbackOverlay) return;
-          this.syncFallbackOverlay();
-          this.fallbackOverlay.style.display = 'block';
-        },
-        hideFallbackOverlay() {
-          if (this.fallbackOverlay) {
-            this.fallbackOverlay.style.display = 'none';
+          if (this.shared && this.shared.activeEl === this.el) {
+            this.setSharedText();
           }
-        },
-        refreshText() {
-          const d = ANIMALS[this.data];
-          if (!d || !this.nameEl || !this.textEl) return;
-          this.nameEl.setAttribute('value', d.name);
-          this.textEl.setAttribute('value', d.text);
-          if (this.hudTitleEl && this.hudTextEl) {
-            this.hudTitleEl.setAttribute('value', d.name);
-            this.hudTextEl.setAttribute('value', d.text);
-          }
-          this.syncFallbackOverlay();
-        },
-        setupPanel() {
-          if (this.panelAppended) return;
-          this.refreshText();
-          const panelOffsetScale = 0.7;
-          const panelOffsetPadding = 0.5;
-          const panelHeightScale = 0.35;
-          const panelHeightPadding = 0.3;
-          // Box3.setFromObject returns world-space dimensions, so offsets are in world units.
-          const bbox = new THREE.Box3().setFromObject(this.el.object3D);
-          const size = bbox.getSize(new THREE.Vector3());
-          this._panelOffsetX = Math.max(size.x, size.z) * panelOffsetScale + panelOffsetPadding;
-          this._panelOffsetY = size.y * panelHeightScale + panelHeightPadding;
-          // Attach to scene root so the panel inherits no animal rotation or scale.
-          this.el.sceneEl.appendChild(this.panel);
-          this.panel.object3D.renderOrder = 999;
-          this.panelAppended = true;
-        },
-        setupHud() {
-          if (this.hudAppended) return;
-          this.refreshText();
-          const scene = this.el.sceneEl;
-          const cameraEntity = scene && (scene.camera && scene.camera.el ? scene.camera.el : scene.querySelector('[camera]'));
-          if (cameraEntity) {
-            cameraEntity.appendChild(this.hud);
-          } else {
-            scene.appendChild(this.hud);
-          }
-          this.hud.object3D.renderOrder = 1000;
-          this.hudAppended = true;
         },
         tick() {
-          if (!this.panelVisible || !this.panelAppended) return;
+          if (!this.shared || this.shared.activeEl !== this.el || !this.panelVisible) return;
+          const panel = this.shared.panel;
           const camera = this.el.sceneEl.camera;
           if (!camera) return;
-          // Get animal world position.
           this.el.object3D.getWorldPosition(this._animalWorldPos);
           camera.getWorldPosition(this._cameraWorldPos);
-          // Keep the panel on the camera-facing side of the animal so it stays in view in VR.
           this._panelDirection.copy(this._cameraWorldPos).sub(this._animalWorldPos);
           this._panelDirection.y = 0;
           if (this._panelDirection.lengthSq() < 0.0001) {
@@ -369,47 +261,27 @@
             this._animalWorldPos.y + this._panelOffsetY,
             this._animalWorldPos.z + this._panelDirection.z * this._panelOffsetX
           );
-          this.panel.object3D.position.copy(this._panelPos);
+          panel.object3D.position.copy(this._panelPos);
         },
         show() {
           clearTimeout(this._hideTimer);
-          const inVrMode = this.el.sceneEl && this.el.sceneEl.is('vr-mode');
-          if (inVrMode) {
-            this.setupPanel();
-            this.setupHud();
-            this.panelVisible = true;
-            this.panel.setAttribute('visible', 'true');
-            if (this.hud) this.hud.setAttribute('visible', 'true');
-          } else {
-            this.hideAllSceneInfo();
-          }
-          this.showFallbackOverlay();
+          this.computeOffsets();
+          this.setSharedText();
+          if (!this.shared || !this.shared.panel) return;
+          this.panelVisible = true;
+          this.shared.activeEl = this.el;
+          this.shared.panel.setAttribute('visible', 'true');
         },
         hide() {
           if (this._isIntersected) return;
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
-            if (this.panel) {
-              this.panelVisible = false;
-              this.panel.setAttribute('visible', 'false');
-            }
-            if (this.hud) {
-              this.hud.setAttribute('visible', 'false');
-            }
-            this.hideFallbackOverlay();
+            this.hideSharedPanel();
           }, 3000);
         },
         remove() {
           clearTimeout(this._hideTimer);
-          if (this.panel && this.panel.parentNode) {
-            this.panel.parentNode.removeChild(this.panel);
-          }
-          if (this.hud && this.hud.parentNode) {
-            this.hud.parentNode.removeChild(this.hud);
-          }
-          if (this.fallbackOverlay && this.fallbackOverlay.parentNode) {
-            this.fallbackOverlay.parentNode.removeChild(this.fallbackOverlay);
-          }
+          this.hideSharedPanel();
         }
       });
 
@@ -1049,28 +921,7 @@
                   animation="property: rotation; from: 0 0 -9; to: 0 0 7; dir: alternate; loop: true; dur: 2000"></a-cylinder>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         INFO PANELS (floating text boards around the scene)
-    ══════════════════════════════════════════════════ -->
-    <!-- Welcome panel -->
-    <a-entity position="0 1.8 -4">
-      <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88"
-               material="transparent: true"></a-plane>
-      <a-text value="🌊 Bienvenue dans\nla Biodiversité Marine VR\n\nRegardez un animal pour\ndécouvrir sa fiche."
-              align="center" color="#00d4ff" width="2.8" position="0 0 0.01"
-              font="dejavu"></a-text>
-    </a-entity>
-
-    <!-- Legend panel (right side) -->
-    <a-entity position="4.5 1.8 -3.5" rotation="0 -40 0">
-      <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85"
-               material="transparent: true"></a-plane>
-      <a-text
-        value="🐬 Dauphin\n🐋 Baleine à bosse\n🦈 Grand requin blanc\n🐢 Tortue verte\n🐙 Pieuvre\n🐠 Poisson clown\n🦩 Raie manta\n🪼 Méduse"
-        align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01"
-        line-height="50"
-        font="dejavu"></a-text>
-    </a-entity>
+    <!-- Panneaux fixes supprimés: un seul panneau dynamique est conserve par `animal-info`. -->
 
     <!-- ══════════════════════════════════════════════════
          DISTANT PARTICLES (plankton)
