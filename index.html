@@ -356,11 +356,18 @@
         },
         show() {
           clearTimeout(this._hideTimer);
-          this.setupPanel();
-          this.setupHud();
-          this.panelVisible = true;
-          this.panel.setAttribute('visible', 'true');
-          if (this.hud) this.hud.setAttribute('visible', 'true');
+          const inVrMode = this.el.sceneEl && this.el.sceneEl.is('vr-mode');
+          if (inVrMode) {
+            this.setupPanel();
+            this.setupHud();
+            this.panelVisible = true;
+            this.panel.setAttribute('visible', 'true');
+            if (this.hud) this.hud.setAttribute('visible', 'true');
+          } else {
+            this.panelVisible = false;
+            if (this.panel) this.panel.setAttribute('visible', 'false');
+            if (this.hud) this.hud.setAttribute('visible', 'false');
+          }
           this.showFallbackOverlay();
         },
         hide() {
