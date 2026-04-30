@@ -100,7 +100,13 @@
         schema: { type: 'string', default: '' },
         init() {
           this.panelAppended = false;
+          this.panelVisible = false;
           this.panel = this.buildPanel();
+          this._animalWorldPos = new THREE.Vector3();
+          this._cameraRight = new THREE.Vector3();
+          this._panelPos = new THREE.Vector3();
+          this._panelOffsetX = 0.5;
+          this._panelOffsetY = 0.5;
           this.el.addEventListener('mouseenter', () => this.show());
           this.el.addEventListener('mouseleave', () => this.hide());
           this.el.addEventListener('click',      () => this.show());
@@ -158,43 +164,56 @@
         setupPanel() {
           if (this.panelAppended) return;
           this.refreshText();
-          const minScaleThreshold = 0.0001; // Prevent division by zero when scale approaches 0.
           const panelOffsetScale = 0.7;
           const panelOffsetPadding = 0.5;
           const panelHeightScale = 0.35;
           const panelHeightPadding = 0.3;
+          // Box3.setFromObject returns world-space dimensions, so offsets are in world units.
           const bbox = new THREE.Box3().setFromObject(this.el.object3D);
           const size = bbox.getSize(new THREE.Vector3());
-          const worldScale = new THREE.Vector3();
-          this.el.object3D.getWorldScale(worldScale);
-          const safeScale = new THREE.Vector3(
-            Math.max(Math.abs(worldScale.x), minScaleThreshold),
-            Math.max(Math.abs(worldScale.y), minScaleThreshold),
-            Math.max(Math.abs(worldScale.z), minScaleThreshold)
-          );
-          const localSize = new THREE.Vector3(
-            size.x / safeScale.x,
-            size.y / safeScale.y,
-            size.z / safeScale.z
-          );
-          const offsetX = Math.max(localSize.x, localSize.z) * panelOffsetScale + panelOffsetPadding;
-          const offsetY = localSize.y * panelHeightScale + panelHeightPadding;
-          this.panel.setAttribute('position', `${offsetX} ${offsetY} 0`);
-          this.el.appendChild(this.panel);
+          this._panelOffsetX = Math.max(size.x, size.z) * panelOffsetScale + panelOffsetPadding;
+          this._panelOffsetY = size.y * panelHeightScale + panelHeightPadding;
+          // Attach to scene root so the panel inherits no animal rotation or scale.
+          this.el.sceneEl.appendChild(this.panel);
           this.panelAppended = true;
+        },
+        tick() {
+          if (!this.panelVisible || !this.panelAppended) return;
+          const camera = this.el.sceneEl.camera;
+          if (!camera) return;
+          // Get animal world position.
+          this.el.object3D.getWorldPosition(this._animalWorldPos);
+          // Extract camera right vector (column 0 of matrixWorld), projected horizontally.
+          const e = camera.matrixWorld.elements;
+          this._cameraRight.set(e[0], 0, e[2]).normalize();
+          // Place panel to the camera's right of the animal, slightly above centre.
+          this._panelPos.set(
+            this._animalWorldPos.x + this._cameraRight.x * this._panelOffsetX,
+            this._animalWorldPos.y + this._panelOffsetY,
+            this._animalWorldPos.z + this._cameraRight.z * this._panelOffsetX
+          );
+          this.panel.object3D.position.copy(this._panelPos);
         },
         show() {
           clearTimeout(this._hideTimer);
           this.setupPanel();
+          this.panelVisible = true;
           this.panel.setAttribute('visible', 'true');
         },
         hide() {
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
             if (this.panel) {
+              this.panelVisible = false;
               this.panel.setAttribute('visible', 'false');
             }
           }, 3000);
+        },
+        remove() {
+          clearTimeout(this._hideTimer);
+          if (this.panel && this.panel.parentNode) {
+            this.panel.parentNode.removeChild(this.panel);
+          }
         }
       });
 
