@@ -93,6 +93,9 @@
         schema: { type: 'string', default: '' },
         init() {
           this.panelAppended = false;
+          this.fallbackOverlay = null;
+          this.fallbackTitleEl = null;
+          this.fallbackTextEl = null;
           this.panel = this.buildPanel();
           this.el.addEventListener('mouseenter', () => this.show());
           this.el.addEventListener('mouseleave', () => this.hide());
@@ -142,11 +145,48 @@
 
           return panel;
         },
+        buildFallbackOverlay() {
+          const existing = document.getElementById('animal-fallback-overlay');
+          if (existing) return existing;
+
+          const overlay = document.createElement('div');
+          overlay.id = 'animal-fallback-overlay';
+          overlay.style.cssText = 'position:fixed;left:24px;bottom:24px;width:min(420px,calc(100vw - 48px));max-height:40vh;overflow:auto;padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,rgba(0,26,58,0.96),rgba(0,14,34,0.94));box-shadow:0 14px 40px rgba(0,0,0,0.35);color:#e0f4ff;font-family:Segoe UI, Arial, sans-serif;z-index:2000;display:none;pointer-events:none;backdrop-filter:blur(10px);border:1px solid rgba(127,232,255,0.25);';
+
+          this.fallbackTitleEl = document.createElement('div');
+          this.fallbackTitleEl.style.cssText = 'color:#7fe8ff;font-weight:700;font-size:18px;line-height:1.2;margin-bottom:8px;';
+          overlay.appendChild(this.fallbackTitleEl);
+
+          this.fallbackTextEl = document.createElement('div');
+          this.fallbackTextEl.style.cssText = 'font-size:14px;line-height:1.45;white-space:pre-wrap;';
+          overlay.appendChild(this.fallbackTextEl);
+
+          document.body.appendChild(overlay);
+          return overlay;
+        },
+        syncFallbackOverlay() {
+          const d = ANIMALS[this.data];
+          if (!d || !this.fallbackTitleEl || !this.fallbackTextEl) return;
+          this.fallbackTitleEl.textContent = d.name;
+          this.fallbackTextEl.textContent = d.text;
+        },
+        showFallbackOverlay() {
+          this.fallbackOverlay = this.fallbackOverlay || this.buildFallbackOverlay();
+          if (!this.fallbackOverlay) return;
+          this.syncFallbackOverlay();
+          this.fallbackOverlay.style.display = 'block';
+        },
+        hideFallbackOverlay() {
+          if (this.fallbackOverlay) {
+            this.fallbackOverlay.style.display = 'none';
+          }
+        },
         refreshText() {
           const d = ANIMALS[this.data];
           if (!d || !this.nameEl || !this.textEl) return;
           this.nameEl.setAttribute('value', d.name);
           this.textEl.setAttribute('value', d.text);
+          this.syncFallbackOverlay();
         },
         setupPanel() {
           if (this.panelAppended) return;
@@ -181,18 +221,21 @@
           this.setupPanel();
           this.panelVisible = true;
           this.panel.setAttribute('visible', 'true');
+          this.showFallbackOverlay();
         },
         hide() {
           clearTimeout(this._hideTimer);
           // Extract camera right vector (column 0 of matrixWorld), projected horizontally.
           const camera = this.el.sceneEl.camera;
-          if (!camera) return;
-          const e = camera.matrixWorld.elements;
-          this._cameraRight.set(e[0], 0, e[2]).normalize();
+          if (camera) {
+            const e = camera.matrixWorld.elements;
+            this._cameraRight.set(e[0], 0, e[2]).normalize();
+          }
           this._hideTimer = setTimeout(() => {
             if (this.panel) {
               this.panel.setAttribute('visible', 'false');
             }
+            this.hideFallbackOverlay();
           }, 3000);
         }
       });
@@ -2010,6 +2053,9 @@
         init() {
           this.panelAppended = false;
           this.hudAppended = false;
+          this.fallbackOverlay = null;
+          this.fallbackTitleEl = null;
+          this.fallbackTextEl = null;
           this.panelVisible = false;
           this.panel = this.buildPanel();
           this.hud = this.buildHud();
@@ -2108,6 +2154,42 @@
 
           return hud;
         },
+        buildFallbackOverlay() {
+          const existing = document.getElementById('animal-fallback-overlay');
+          if (existing) return existing;
+
+          const overlay = document.createElement('div');
+          overlay.id = 'animal-fallback-overlay';
+          overlay.style.cssText = 'position:fixed;left:24px;bottom:24px;width:min(420px,calc(100vw - 48px));max-height:40vh;overflow:auto;padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,rgba(0,26,58,0.96),rgba(0,14,34,0.94));box-shadow:0 14px 40px rgba(0,0,0,0.35);color:#e0f4ff;font-family:Segoe UI, Arial, sans-serif;z-index:2000;display:none;pointer-events:none;backdrop-filter:blur(10px);border:1px solid rgba(127,232,255,0.25);';
+
+          this.fallbackTitleEl = document.createElement('div');
+          this.fallbackTitleEl.style.cssText = 'color:#7fe8ff;font-weight:700;font-size:18px;line-height:1.2;margin-bottom:8px;';
+          overlay.appendChild(this.fallbackTitleEl);
+
+          this.fallbackTextEl = document.createElement('div');
+          this.fallbackTextEl.style.cssText = 'font-size:14px;line-height:1.45;white-space:pre-wrap;';
+          overlay.appendChild(this.fallbackTextEl);
+
+          document.body.appendChild(overlay);
+          return overlay;
+        },
+        syncFallbackOverlay() {
+          const d = ANIMALS[this.data];
+          if (!d || !this.fallbackTitleEl || !this.fallbackTextEl) return;
+          this.fallbackTitleEl.textContent = d.name;
+          this.fallbackTextEl.textContent = d.text;
+        },
+        showFallbackOverlay() {
+          this.fallbackOverlay = this.fallbackOverlay || this.buildFallbackOverlay();
+          if (!this.fallbackOverlay) return;
+          this.syncFallbackOverlay();
+          this.fallbackOverlay.style.display = 'block';
+        },
+        hideFallbackOverlay() {
+          if (this.fallbackOverlay) {
+            this.fallbackOverlay.style.display = 'none';
+          }
+        },
         refreshText() {
           const d = ANIMALS[this.data];
           if (!d || !this.nameEl || !this.textEl) return;
@@ -2117,6 +2199,7 @@
             this.hudTitleEl.setAttribute('value', d.name);
             this.hudTextEl.setAttribute('value', d.text);
           }
+          this.syncFallbackOverlay();
         },
         setupPanel() {
           if (this.panelAppended) return;
@@ -2139,9 +2222,12 @@
           if (this.hudAppended) return;
           this.refreshText();
           const scene = this.el.sceneEl;
-          const camera = scene && scene.camera;
-          if (!camera) return;
-          camera.parentEl.appendChild(this.hud);
+          const cameraEntity = scene && (scene.camera && scene.camera.el ? scene.camera.el : scene.querySelector('[camera]'));
+          if (cameraEntity) {
+            cameraEntity.appendChild(this.hud);
+          } else {
+            scene.appendChild(this.hud);
+          }
           this.hud.object3D.renderOrder = 1000;
           this.hudAppended = true;
         },
@@ -2174,6 +2260,7 @@
           this.panelVisible = true;
           this.panel.setAttribute('visible', 'true');
           if (this.hud) this.hud.setAttribute('visible', 'true');
+          this.showFallbackOverlay();
         },
         hide() {
           clearTimeout(this._hideTimer);
@@ -2185,6 +2272,7 @@
             if (this.hud) {
               this.hud.setAttribute('visible', 'false');
             }
+            this.hideFallbackOverlay();
           }, 3000);
         },
         remove() {
@@ -2194,6 +2282,9 @@
           }
           if (this.hud && this.hud.parentNode) {
             this.hud.parentNode.removeChild(this.hud);
+          }
+          if (this.fallbackOverlay && this.fallbackOverlay.parentNode) {
+            this.fallbackOverlay.parentNode.removeChild(this.fallbackOverlay);
           }
         }
       });
