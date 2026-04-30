@@ -3,67 +3,324 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Biodiversité Marine – VR Quest</title>
+  <title>Biodiversite Marine - VR Quest</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/aframe-environment-component@1.3.5/dist/aframe-environment-component.min.js"></script>
   <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     #info-overlay {
       position: fixed;
-      bottom: 800px;
       left: 50%;
+      bottom: 34px;
       transform: translateX(-50%);
-      background: rgba(0, 20, 60, 0.88);
-      color: #e0f4ff;
-      border: 1px solid #00aaff55;
-      border-radius: 14px;
-      padding: 16px 24px;
-      max-width: 420px;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 15px;
-      line-height: 1.5;
+      width: min(520px, calc(100vw - 32px));
+      box-sizing: border-box;
       display: none;
-      z-index: 999;
+      z-index: 1000;
+      padding: 18px 22px;
+      color: #e0f4ff;
+      background: rgba(0, 20, 60, 0.9);
+      border: 1px solid rgba(0, 170, 255, 0.65);
+      border-radius: 12px;
+      box-shadow: 0 0 22px rgba(0, 170, 255, 0.35);
       pointer-events: none;
+      line-height: 1.45;
     }
-    #info-overlay h2 { margin: 0 0 6px; font-size: 18px; color: #00d4ff; }
-    #info-overlay p  { margin: 0; }
-    #ui-hint {
-      position: fixed;
-      top: 406px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.55);
-      color: #cceeff;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-family: 'Segoe UI', sans-serif;
-      font-size: 13px;
-      z-index: 998;
+
+    #info-overlay h2 {
+      margin: 0 0 8px;
+      color: #00d4ff;
+      font-size: 20px;
     }
+
+    #info-overlay p {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    #ui-hint,
     #speed-control {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 20, 60, 0.8);
-      color: #e0f4ff;
-      border: 1px solid #00aaff55;
-      border-radius: 10px;
-      padding: 12px;
-      font-family: 'Segoe UI', sans-serif;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      z-index: 1001;
+      color: #fff;
+      background: rgba(0, 20, 60, 0.78);
+      border: 1px solid rgba(0, 170, 255, 0.45);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
     }
-    #speed-control label { font-size: 12px; font-weight: bold; color: #00d4ff; }
-    #speed-slider { cursor: pointer; width: 120px; }
+
+    #ui-hint {
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 9px 16px;
+      border-radius: 22px;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    #speed-control {
+      top: 16px;
+      right: 16px;
+      width: 180px;
+      padding: 12px;
+      border-radius: 10px;
+    }
+
+    #speed-control label {
+      display: block;
+      margin-bottom: 8px;
+      color: #bfefff;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    #speed-slider {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    @media (max-width: 680px) {
+      #ui-hint {
+        left: 12px;
+        right: 12px;
+        transform: none;
+        white-space: normal;
+        text-align: center;
+      }
+
+      #speed-control {
+        top: 64px;
+        right: 12px;
+        width: 150px;
+      }
+    }
   </style>
+  <script>
+    window.speedMultiplier = 1;
+
+    const ANIMALS = {
+      dolphin: {
+        name: "Grand Dauphin (Tursiops truncatus)",
+        text: "Mammifere marin tres intelligent vivant en groupes sociaux. Il communique avec des clics et des sifflements ultrasoniques, et utilise l'echolocalisation pour chasser et naviguer."
+      },
+      whale: {
+        name: "Baleine a Bosse (Megaptera novaeangliae)",
+        text: "Geant des mers connu pour ses chants complexes et ses migrations de plusieurs milliers de kilometres entre zones d'alimentation et zones de reproduction."
+      },
+      shark: {
+        name: "Grand Requin Blanc (Carcharodon carcharias)",
+        text: "Predateur apex essentiel a l'equilibre des oceans. Ses sens tres developpes lui permettent de detecter les proies a grande distance."
+      },
+      turtle: {
+        name: "Tortue Verte (Chelonia mydas)",
+        text: "Reptile marin herbivore qui joue un role important dans les herbiers marins. Les femelles reviennent souvent pondre sur leur plage de naissance."
+      },
+      octopus: {
+        name: "Pieuvre Commune (Octopus vulgaris)",
+        text: "Cephalopode tres intelligent capable de changer de couleur et de texture pour se camoufler. Ses huit bras portent des ventouses sensibles."
+      },
+      clownfish: {
+        name: "Poisson Clown (Amphiprioninae)",
+        text: "Petit poisson vivant en symbiose avec les anemones de mer. Son mucus le protege des cellules urticantes de l'anemone."
+      },
+      ray: {
+        name: "Raie Manta (Mobula birostris)",
+        text: "Grande raie inoffensive qui semble voler dans l'eau. Elle filtre le plancton avec ses branchies et peut atteindre plusieurs metres d'envergure."
+      },
+      jellyfish: {
+        name: "Meduse (Scyphozoa)",
+        text: "Invertibre gelatineux compose en grande partie d'eau. Elle se deplace par pulsations et capture de petites proies avec ses tentacules urticants."
+      }
+    };
+
+    AFRAME.registerGeometry("ellipsoid", {
+      schema: {
+        width: { default: 1 },
+        height: { default: 1 },
+        depth: { default: 1 },
+        segments: { default: 16 }
+      },
+      init(data) {
+        const geo = new THREE.SphereGeometry(0.5, data.segments, data.segments);
+        geo.scale(data.width, data.height, data.depth);
+        this.geometry = geo;
+      }
+    });
+
+    AFRAME.registerPrimitive("a-ellipsoid", {
+      defaultComponents: { geometry: { primitive: "ellipsoid" }, material: {} },
+      mappings: {
+        width: "geometry.width",
+        height: "geometry.height",
+        depth: "geometry.depth",
+        color: "material.color",
+        opacity: "material.opacity",
+        roughness: "material.roughness",
+        metalness: "material.metalness"
+      }
+    });
+
+    AFRAME.registerComponent("animal-info", {
+      schema: { type: "string", default: "" },
+      init() {
+        this.overlay = document.getElementById("info-overlay");
+        this.nameEl = document.getElementById("info-name");
+        this.textEl = document.getElementById("info-text");
+        this.pinned = false;
+
+        this.el.addEventListener("mouseenter", () => this.show(false));
+        this.el.addEventListener("mouseleave", () => {
+          if (!this.pinned) this.hide();
+        });
+        this.el.addEventListener("click", () => {
+          this.pinned = !this.pinned;
+          if (this.pinned) this.show(true);
+          else this.hide();
+        });
+      },
+      show(pinned) {
+        const d = ANIMALS[this.data];
+        if (!d) return;
+        this.pinned = Boolean(pinned);
+        this.nameEl.textContent = d.name;
+        this.textEl.textContent = d.text;
+        this.overlay.style.display = "block";
+      },
+      hide() {
+        this.pinned = false;
+        this.overlay.style.display = "none";
+      }
+    });
+
+    AFRAME.registerComponent("swim", {
+      schema: {
+        radius: { default: 8 },
+        speed: { default: 0.4 },
+        yOffset: { default: 0 },
+        yAmplitude: { default: 0.3 },
+        tilt: { default: 8 },
+        vary: { default: false },
+        darting: { default: false }
+      },
+      init() {
+        this.angle = Math.random() * Math.PI * 2;
+        const pos = this.el.getAttribute("position") || { x: 0, y: 0, z: 0 };
+        this.centerX = Number(pos.x) || 0;
+        this.centerZ = Number(pos.z) || 0;
+        this.baseY = (Number(pos.y) || 0) + this.data.yOffset;
+      },
+      tick(t, dt) {
+        const s = this.data;
+        let speed = s.speed;
+        let radius = s.radius;
+
+        if (s.darting) {
+          const cycle = Math.sin(t / 1200);
+          speed *= cycle < -0.55 ? 0.18 : cycle > 0.45 ? 2.2 : 1;
+        } else if (s.vary) {
+          const factor = Math.max(0.15, (Math.sin(this.angle * 0.8) + 1) / 2);
+          speed *= 0.35 + factor;
+          radius *= 0.75 + factor * 0.25;
+        }
+
+        this.angle += (speed * dt * window.speedMultiplier) / 1000;
+        const x = this.centerX + Math.cos(this.angle) * radius;
+        const z = this.centerZ + Math.sin(this.angle) * radius;
+        const y = this.baseY + Math.sin(this.angle * 1.5) * s.yAmplitude;
+        const heading = Math.atan2(Math.cos(this.angle), -Math.sin(this.angle)) * 180 / Math.PI;
+        const pitch = Math.sin(this.angle * 1.5) * s.tilt;
+        this.el.setAttribute("position", { x, y, z });
+        this.el.setAttribute("rotation", { x: pitch, y: heading, z: 0 });
+      }
+    });
+
+    AFRAME.registerComponent("bubble-rise", {
+      schema: { speed: { default: 0.6 } },
+      init() {
+        this.startY = -4.2 - Math.random() * 0.8;
+        this.reset();
+      },
+      reset() {
+        this.el.setAttribute("position", {
+          x: (Math.random() - 0.5) * 28,
+          y: this.startY,
+          z: (Math.random() - 0.5) * 28
+        });
+      },
+      tick(t, dt) {
+        const pos = this.el.getAttribute("position");
+        pos.y += this.data.speed * dt * window.speedMultiplier / 1000;
+        pos.x += Math.sin(t / 900 + pos.z) * 0.0015 * dt;
+        if (pos.y > 5.8) this.reset();
+        else this.el.setAttribute("position", pos);
+      }
+    });
+
+    AFRAME.registerComponent("jelly-pulse", {
+      schema: { speed: { default: 1.5 }, glow: { default: false } },
+      init() {
+        this.acc = 0;
+        this.light = this.el.parentElement.querySelector("a-light");
+      },
+      tick(t, dt) {
+        this.acc += dt * window.speedMultiplier / 1000;
+        const wave = Math.sin(this.acc * this.data.speed);
+        const scale = 0.9 + wave * 0.1;
+        this.el.setAttribute("scale", `${scale} ${scale} ${scale}`);
+        if (this.data.glow && this.light) {
+          const intensity = 1.1 + (wave + 1) * 0.55;
+          this.light.setAttribute("light", "intensity", intensity);
+          this.el.setAttribute("material", "emissiveIntensity", intensity);
+        }
+      }
+    });
+
+    AFRAME.registerComponent("ray-glide", {
+      schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 } },
+      init() {
+        this.acc = Math.random() * Math.PI * 2;
+        const pos = this.el.getAttribute("position") || { y: -1 };
+        this.baseY = Number(pos.y) || -1;
+      },
+      tick(t, dt) {
+        this.acc += dt * window.speedMultiplier * this.data.speed / 1000;
+        const a = this.acc;
+        const x = Math.sin(a) * this.data.scaleX;
+        const z = Math.sin(a * 2) * this.data.scaleZ;
+        const y = this.baseY + Math.sin(a * 0.7) * 0.45;
+        const heading = Math.atan2(Math.cos(a), -Math.cos(a * 2) * 2) * 180 / Math.PI;
+        this.el.setAttribute("position", { x, y, z });
+        this.el.setAttribute("rotation", { x: 0, y: heading, z: 0 });
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const slider = document.getElementById("speed-slider");
+      if (slider) {
+        slider.addEventListener("input", (e) => {
+          window.speedMultiplier = parseFloat(e.target.value);
+        });
+      }
+
+      window.addEventListener("click", () => {
+        const soundEl = document.querySelector("#bg-sound");
+        if (soundEl && soundEl.components.sound) soundEl.components.sound.playSound();
+      }, { once: true });
+    });
+  </script>
 </head>
 <body>
-  <div id="ui-hint">🎯 Regardez un animal pour lire sa fiche · [VR] appuyez sur le bouton Quest</div>
+  <div id="ui-hint">Regardez un animal pour lire sa fiche. Cliquez pour la figer.</div>
   <div id="speed-control">
-    <label for="speed-slider">Vitesse des animaux</label>
-    <input type="range" id="speed-slider" min="0" max="3" step="0.1" value="1">
+    <label for="speed-slider">Vitesse de la vie marine</label>
+    <input type="range" id="speed-slider" min="0" max="3" step="0.1" value="1" />
   </div>
   <div id="info-overlay">
     <h2 id="info-name"></h2>
@@ -74,308 +331,80 @@
     webxr="referenceSpaceType: local-floor; optionalFeatures: hand-tracking"
     renderer="colorManagement: true; physicallyCorrectLights: true"
     raycaster="objects: .clickable"
-    fog="type: exponential; color: #001a3a; density: 0.01"
-    background="color: #00008B"
+    fog="type: exponential; color: #001a3a; density: 0.012"
+    background="color: #000033"
   >
-    <!-- ══════════════════════════════════════════════════
-         ASSETS
-    ══════════════════════════════════════════════════ -->
     <a-assets>
-      <!-- Cursor reticle -->
-      <img id="reticle" crossorigin="anonymous" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Ccircle cx='32' cy='32' r='28' fill='none' stroke='white' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='4' fill='white'/%3E%3C/svg%3E" />
-      <!-- Ambient Underwater Sound (Stable A-Frame CDN) -->
+      <a-asset-item id="dolphin-obj" src="pack/OBJ/Dolphin.obj"></a-asset-item>
+      <a-asset-item id="dolphin-mtl" src="pack/OBJ/Dolphin.mtl"></a-asset-item>
+      <a-asset-item id="shark-obj" src="pack/OBJ/Shark.obj"></a-asset-item>
+      <a-asset-item id="shark-mtl" src="pack/OBJ/Shark.mtl"></a-asset-item>
+      <a-asset-item id="whale-obj" src="pack/OBJ/Whale.obj"></a-asset-item>
+      <a-asset-item id="whale-mtl" src="pack/OBJ/Whale.mtl"></a-asset-item>
+      <a-asset-item id="manta-obj" src="pack/OBJ/Manta%20ray.obj"></a-asset-item>
+      <a-asset-item id="manta-mtl" src="pack/OBJ/Manta%20ray.mtl"></a-asset-item>
+      <a-asset-item id="fish1-obj" src="pack/OBJ/Fish1.obj"></a-asset-item>
+      <a-asset-item id="fish1-mtl" src="pack/OBJ/Fish1.mtl"></a-asset-item>
+      <a-asset-item id="fish2-obj" src="pack/OBJ/Fish2.obj"></a-asset-item>
+      <a-asset-item id="fish2-mtl" src="pack/OBJ/Fish2.mtl"></a-asset-item>
+      <a-asset-item id="fish3-obj" src="pack/OBJ/Fish3.obj"></a-asset-item>
+      <a-asset-item id="fish3-mtl" src="pack/OBJ/Fish3.mtl"></a-asset-item>
       <audio id="ambient-sound" src="https://cdn.aframe.io/basic-guide/audio/backgroundnoise.wav" preload="auto" crossorigin="anonymous"></audio>
     </a-assets>
 
-    <!-- Background Sound (non-positional for global ambience) -->
-    <a-entity id="bg-sound" sound="src: #ambient-sound; autoplay: false; loop: true; volume: 0.5; positional: false; poolSize: 5"></a-entity>
+    <a-entity id="bg-sound" sound="src: #ambient-sound; autoplay: false; loop: true; volume: 0.45; positional: false; poolSize: 5"></a-entity>
 
-    <script>
-      // Force audio start on first user interaction (browser security policy)
-      window.addEventListener('click', () => {
-        const soundEl = document.querySelector('#bg-sound');
-        if (soundEl && soundEl.components.sound) {
-          soundEl.components.sound.playSound();
-        }
-      }, { once: true });
-    </script>
-
-    <!-- ══════════════════════════════════════════════════
-         CUSTOM COMPONENTS
-    ══════════════════════════════════════════════════ -->
-    <script>
-      /* ---- Global Speed Control ---- */
-      window.speedMultiplier = 1.0;
-      window.addEventListener('DOMContentLoaded', () => {
-        const slider = document.getElementById('speed-slider');
-        if (slider) {
-          slider.addEventListener('input', (e) => {
-            window.speedMultiplier = parseFloat(e.target.value);
-          });
-        }
-      });
-
-      /* ---- Animal info data ---- */
-      const ANIMALS = {
-        dolphin: {
-          name: "🐬 Grand Dauphin (Tursiops truncatus)",
-          text: "Mammifère marin très intelligent vivant en groupes sociaux (pods). Il communique grâce à des clics et sifflements ultrasoniques (écholocalisation). Vitesse max : 55 km/h. Espérance de vie : 40–50 ans. Présent dans tous les océans tempérés et tropicaux."
-        },
-        whale: {
-          name: "🐋 Baleine à Bosse (Megaptera novaeangliae)",
-          text: "Cétacé baleen mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
-        },
-        shark: {
-          name: "🦈 Grand Requin Blanc (Carcharodon carcharias)",
-          text: "Prédateur apex des océans, atteignant 6 m de long. Doté de 300 dents triangulaires renouvelables. Son sens de l'électroréception (ampoules de Lorenzini) détecte les champs électriques à plusieurs mètres. Espèce vulnérable menacée par la pêche accidentelle."
-        },
-        turtle: {
-          name: "🐢 Tortue Verte (Chelonia mydas)",
-          text: "Reptile marin herbivore pouvant vivre plus de 80 ans. Les femelles reviennent pondre sur la plage de leur naissance (navigation magnétique). Elle joue un rôle clé dans les écosystèmes d'herbiers marins. Classée espèce en danger sur la liste rouge UICN."
-        },
-        octopus: {
-          name: "🐙 Pieuvre Commune (Octopus vulgaris)",
-          text: "Mollusque céphalopode doté de 8 bras couverts de ventouses. Animal le plus intelligent parmi les invertébrés : il ouvre des bocaux, mémorise des parcours et joue. Peut changer de couleur et de texture en millisecondes pour se camoufler. Durée de vie : 1–2 ans."
-        },
-        clownfish: {
-          name: "🐠 Poisson Clown (Amphiprioninae)",
-          text: "Petit poisson vivant en symbiose avec les anémones de mer. Son mucus le protège des cellules urticantes de l'anémone. Tous les poissons clown naissent mâles – le dominant peut devenir femelle (hermaphrodisme protandrique). Endémique de l'Indo-Pacifique."
-        },
-        ray: {
-          name: "🦩 Raie Manta (Mobula birostris)",
-          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau rapporté à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
-        },
-        jellyfish: {
-          name: "🪼 Méduse (Scyphozoa)",
-          text: "Invertébré marin gélatineux sans cerveau ni cœur, composé à 95 % d'eau. Se déplace en contractant sa cloche pour expulser l'eau. Ses tentacules urticants paralysent les proies (zooplancton, petits poissons). Certaines espèces sont biologiquement immortelles (Turritopsis dohrnii). Présente dans tous les océans."
-        }
-      };
-
-      /* ---- Info panel component ---- */
-      AFRAME.registerComponent('animal-info', {
-        schema: { type: 'string', default: '' },
-        init() {
-          this.overlay = document.getElementById('info-overlay');
-          this.nameEl  = document.getElementById('info-name');
-          this.textEl  = document.getElementById('info-text');
-          this.el.addEventListener('mouseenter', () => this.show());
-          this.el.addEventListener('mouseleave', () => this.hide());
-          this.el.addEventListener('click',      () => this.show());
-        },
-        show() {
-          const d = ANIMALS[this.data];
-          if (!d) return;
-          this.nameEl.textContent = d.name;
-          this.textEl.textContent = d.text;
-          this.overlay.style.display = 'block';
-        },
-        hide() {
-          this.overlay.style.display = 'none';
-        }
-      });
-
-      /* ---- Smooth swim animation component ---- */
-      AFRAME.registerComponent('swim', {
-        schema: {
-          radius:    { default: 8 },
-          speed:     { default: 0.4 },
-          yOffset:   { default: 0 },
-          yAmplitude:{ default: 0.3 },
-          tilt:      { default: 8 },
-          vary:      { default: false },
-          darting:   { default: false } // New: Stop-and-go behavior
-        },
-        init() {
-          this.angle = Math.random() * Math.PI * 2;
-          this.baseY = parseFloat(this.el.getAttribute('position').y) || 0;
-        },
-        tick(t, dt) {
-          const s = this.data;
-          let currentSpeed = s.speed;
-          let currentRadius = s.radius;
-
-          if (s.darting) {
-            // Behavioral darting: fast move -> pause/turn -> move
-            const dartCycle = Math.sin(t / 1500); 
-            if (dartCycle < -0.6) {
-              currentSpeed *= 0.1;
-              currentRadius *= 0.8;
-            } else if (dartCycle > 0.4) {
-              currentSpeed *= 2.0;
-            }
-          } else if (s.vary) {
-            const cycle = Math.sin(this.angle * 0.8);
-            const factor = Math.max(0.05, (cycle + 1) / 2);
-            currentSpeed *= (0.1 + 0.9 * factor);
-            currentRadius *= (0.3 + 0.7 * factor);
-          }
-
-          this.angle += (currentSpeed * dt * window.speedMultiplier) / 1000;
-          const x  = Math.cos(this.angle) * currentRadius;
-          const z  = Math.sin(this.angle) * currentRadius;
-          const y  = this.baseY + Math.sin(this.angle * 1.5) * s.yAmplitude;
-          this.el.setAttribute('position', { x, y, z });
-          const heading = (Math.atan2(Math.cos(this.angle), -Math.sin(this.angle)) * 180 / Math.PI);
-          const pitch   = Math.sin(this.angle * 1.5) * s.tilt;
-          this.el.setAttribute('rotation', { x: pitch, y: heading, z: 0 });
-        }
-      });
-
-      /* ---- Tail wag component ---- */
-      AFRAME.registerComponent('tail-wag', {
-        schema: { speed: { default: 3 }, amplitude: { default: 20 } },
-        init() { this.acc = 0; },
-        tick(t, dt) {
-          this.acc += (dt * window.speedMultiplier) / 1000;
-          const angle = Math.sin(this.acc * this.data.speed) * this.data.amplitude;
-          this.el.setAttribute('rotation', { x: 0, y: angle, z: 0 });
-        }
-      });
-
-      /* ---- Bubble rise ---- */
-      AFRAME.registerComponent('bubble-rise', {
-        schema: { speed: { default: 0.6 } },
-        init() {
-          this.startY = parseFloat(this.el.getAttribute('position').y) || -4;
-          this.el.setAttribute('position', {
-            x: (Math.random() - 0.5) * 20,
-            y: this.startY,
-            z: (Math.random() - 0.5) * 20
-          });
-        },
-        tick(t, dt) {
-          const pos = this.el.getAttribute('position');
-          pos.y += this.data.speed * dt * window.speedMultiplier / 1000;
-          if (pos.y > 6) {
-            pos.y = this.startY;
-            pos.x = (Math.random() - 0.5) * 20;
-            pos.z = (Math.random() - 0.5) * 20;
-          }
-          this.el.setAttribute('position', pos);
-        }
-      });
-
-      /* ---- Jellyfish pulse & Glow ---- */
-      AFRAME.registerComponent('jelly-pulse', {
-        schema: { speed: { default: 1.5 }, glow: { default: false } },
-        init() { 
-          this.acc = 0; 
-          this.light = this.el.parentElement.querySelector('a-light');
-        },
-        tick(t, dt) {
-          this.acc += (dt * window.speedMultiplier) / 1000;
-          const wave = Math.sin(this.acc * this.data.speed);
-          const s = 0.9 + wave * 0.1;
-          this.el.setAttribute('scale', `${s} ${s} ${s}`);
-          
-          if (this.data.glow) {
-            const intensity = 1.0 + (wave + 1) * 0.8; 
-            this.el.setAttribute('material', 'emissiveIntensity', intensity);
-            if (this.light) {
-              this.light.setAttribute('light', 'intensity', intensity);
-            }
-          }
-        }
-      });
-
-      /* ---- Ray glide (figure-8) ---- */
-      AFRAME.registerComponent('ray-glide', {
-        schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 } },
-        init() {
-          this.acc = Math.random() * Math.PI * 2;
-          this.baseY = parseFloat(this.el.getAttribute('position').y) || -1;
-        },
-        tick(t, dt) {
-          this.acc += (dt * window.speedMultiplier * this.data.speed) / 1000;
-          const a  = this.acc;
-          const x  = Math.sin(a) * this.data.scaleX;
-          const z  = Math.sin(a * 2) * this.data.scaleZ;
-          const y  = this.baseY + Math.sin(a * 0.7) * 0.4;
-          this.el.setAttribute('position', { x, y, z });
-          const heading = Math.atan2(Math.cos(a), -Math.cos(a * 2) * 2) * 180 / Math.PI;
-          this.el.setAttribute('rotation', { x: 0, y: heading, z: 0 });
-        }
-      });
-    </script>
-
-    <!-- ══════════════════════════════════════════════════
-         CAMERA + CURSOR
-    ══════════════════════════════════════════════════ -->
     <a-entity id="rig" position="0 0 0">
       <a-camera position="0 1.6 0" look-controls wasd-controls>
         <a-cursor
           fuse="true"
-          fuse-timeout="1500"
+          fuse-timeout="1400"
           raycaster="objects: .clickable"
           geometry="primitive: ring; radiusInner: 0.018; radiusOuter: 0.026"
-          material="color: white; shader: flat; opacity: 0.85"
+          material="color: cyan; shader: flat; opacity: 0.85"
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
         ></a-cursor>
       </a-camera>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         LIGHTING
-    ══════════════════════════════════════════════════ -->
-    <a-light type="ambient"      color="#0a2a4a" intensity="2.5"></a-light>
-    <a-light type="directional"  color="#4488ff" intensity="1.5" position="1 3 -2"></a-light>
-    <a-light type="point"        color="#00aaff" intensity="1.5" position="0 4 0"
-             animation="property: position; to: 0 4 0; dir: alternate; loop: true; dur: 4000; easing: easeInOutSine">
-    </a-light>
+    <a-light type="ambient" color="#0a2a4a" intensity="2.2"></a-light>
+    <a-light type="directional" color="#4488ff" intensity="1.35" position="1 4 -2"></a-light>
+    <a-light type="point" color="#00aaff" intensity="1.2" distance="18" position="0 4 0"></a-light>
 
-    <!-- ══════════════════════════════════════════════════
-         SEA FLOOR
-    ══════════════════════════════════════════════════ -->
-    <a-plane position="0 -4 0" rotation="-90 0 0" width="80" height="80"
-             material="color: #0d2b1a; roughness: 1; metalness: 0">
-    </a-plane>
-    <!-- Sand details -->
-    <a-entity position="0 -3.98 0">
+    <a-plane position="0 -4 0" rotation="-90 0 0" width="90" height="90" material="color: #0d2b1a; roughness: 1; metalness: 0"></a-plane>
+    <a-entity environment="preset: underwater; groundColor: #0d2b1a; fog: 0; lighting: none; playArea: 1"></a-entity>
+
+    <a-entity position="0 -3.95 0">
       <a-sphere position="-3 0 -4" radius="0.4" color="#1a3a2a" roughness="1"></a-sphere>
-      <a-sphere position=" 5 0  2" radius="0.6" color="#0f2a18" roughness="1"></a-sphere>
-      <a-sphere position="-7 0  5" radius="0.3" color="#1a3a2a" roughness="1"></a-sphere>
+      <a-sphere position="5 0 2" radius="0.6" color="#0f2a18" roughness="1"></a-sphere>
+      <a-sphere position="-7 0 5" radius="0.3" color="#1a3a2a" roughness="1"></a-sphere>
     </a-entity>
 
-    <!-- Corals (simple geometry groups) -->
-    <!-- Coral 1 -->
-    <a-entity position="-4 -3.5 -5">
-      <a-cone color="#ff4477" height="1.2" radius-bottom="0.15" radius-top="0.05" position="0 0.6 0" opacity="0.9"></a-cone>
-      <a-cone color="#ff3366" height="1.0" radius-bottom="0.12" radius-top="0.05" position="0.3 0.5 0.1" rotation="0 0 15" opacity="0.9"></a-cone>
-      <a-cone color="#ff5588" height="0.8" radius-bottom="0.1"  radius-top="0.04" position="-0.2 0.4 0.1" rotation="0 0 -10" opacity="0.9"></a-cone>
+    <a-entity position="-4 -3.45 -5">
+      <a-cone color="#ff4477" height="1.2" radius-bottom="0.15" radius-top="0.05" position="0 0.6 0"></a-cone>
+      <a-cone color="#ff3366" height="1.0" radius-bottom="0.12" radius-top="0.05" position="0.3 0.5 0.1" rotation="0 0 15"></a-cone>
+      <a-cone color="#ff5588" height="0.8" radius-bottom="0.1" radius-top="0.04" position="-0.2 0.4 0.1" rotation="0 0 -10"></a-cone>
     </a-entity>
-    <!-- Coral 2 -->
-    <a-entity position="5 -3.5 -6">
-      <a-cone color="#ff8800" height="1.4" radius-bottom="0.18" radius-top="0.06" position="0 0.7 0" opacity="0.9"></a-cone>
-      <a-cone color="#ffaa00" height="1.1" radius-bottom="0.14" radius-top="0.05" position="-0.3 0.55 0" rotation="0 0 -12" opacity="0.9"></a-cone>
+    <a-entity position="5 -3.45 -6">
+      <a-cone color="#ff8800" height="1.4" radius-bottom="0.18" radius-top="0.06" position="0 0.7 0"></a-cone>
+      <a-cone color="#ffaa00" height="1.1" radius-bottom="0.14" radius-top="0.05" position="-0.3 0.55 0" rotation="0 0 -12"></a-cone>
     </a-entity>
-    <!-- Coral 3 -->
-    <a-entity position="2 -3.5 6">
-      <a-cone color="#aa00ff" height="1.0" radius-bottom="0.14" radius-top="0.05" position="0 0.5 0" opacity="0.9"></a-cone>
-      <a-cone color="#cc44ff" height="0.8" radius-bottom="0.10" radius-top="0.04" position="0.25 0.4 0" rotation="0 0 14" opacity="0.9"></a-cone>
-      <a-cone color="#8800dd" height="0.7" radius-bottom="0.09" radius-top="0.03" position="-0.2 0.35 0.1" rotation="0 0 -9" opacity="0.9"></a-cone>
-    </a-entity>
-    <!-- Seaweed (thin planes oscillating) -->
-    <a-entity position="-6 -1.5 3">
-      <a-plane color="#007733" width="0.12" height="2.5" opacity="0.85"
-               animation="property: rotation; from: 0 0 -8; to: 0 0 8; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine">
-      </a-plane>
-    </a-entity>
-    <a-entity position="-5.5 -1.5 3.5">
-      <a-plane color="#009944" width="0.1" height="2.0" opacity="0.85"
-               animation="property: rotation; from: 0 0 6; to: 0 0 -10; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine">
-      </a-plane>
-    </a-entity>
-    <a-entity position="7 -1.5 -3">
-      <a-plane color="#006622" width="0.11" height="2.2" opacity="0.85"
-               animation="property: rotation; from: 0 0 -7; to: 0 0 9; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine">
-      </a-plane>
+    <a-entity position="2 -3.45 6">
+      <a-cone color="#aa00ff" height="1.0" radius-bottom="0.14" radius-top="0.05" position="0 0.5 0"></a-cone>
+      <a-cone color="#cc44ff" height="0.8" radius-bottom="0.1" radius-top="0.04" position="0.25 0.4 0" rotation="0 0 14"></a-cone>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         BUBBLES
-    ══════════════════════════════════════════════════ -->
+    <a-entity position="-6 -2.2 3">
+      <a-plane color="#007733" width="0.12" height="2.5" opacity="0.85" animation="property: rotation; from: 0 0 -8; to: 0 0 8; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"></a-plane>
+    </a-entity>
+    <a-entity position="-5.5 -2.35 3.5">
+      <a-plane color="#009944" width="0.1" height="2.0" opacity="0.85" animation="property: rotation; from: 0 0 6; to: 0 0 -10; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine"></a-plane>
+    </a-entity>
+    <a-entity position="7 -2.25 -3">
+      <a-plane color="#006622" width="0.11" height="2.2" opacity="0.85" animation="property: rotation; from: 0 0 -7; to: 0 0 9; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine"></a-plane>
+    </a-entity>
+
     <a-entity id="bubbles">
-      <!-- 18 bubbles of varying sizes -->
       <a-sphere bubble-rise="speed: 0.5" radius="0.04" material="color: #aaddff; opacity: 0.35; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.7" radius="0.06" material="color: #aaddff; opacity: 0.30; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.4" radius="0.03" material="color: #aaddff; opacity: 0.40; transparent: true; shader: flat"></a-sphere>
@@ -385,322 +414,99 @@
       <a-sphere bubble-rise="speed: 0.55" radius="0.06" material="color: #aaddff; opacity: 0.32; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.65" radius="0.03" material="color: #aaddff; opacity: 0.42; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.5" radius="0.05" material="color: #aaddff; opacity: 0.36; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.7" radius="0.04" material="color: #aaddff; opacity: 0.30; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.3" radius="0.08" material="color: #aaddff; opacity: 0.25; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.6" radius="0.04" material="color: #aaddff; opacity: 0.35; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.75" radius="0.05" material="color: #aaddff; opacity: 0.33; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.5" radius="0.03" material="color: #aaddff; opacity: 0.40; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.85" radius="0.06" material="color: #aaddff; opacity: 0.28; transparent: true; shader: flat"></a-sphere>
       <a-sphere bubble-rise="speed: 0.4" radius="0.05" material="color: #aaddff; opacity: 0.38; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.6" radius="0.04" material="color: #aaddff; opacity: 0.34; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.55" radius="0.07" material="color: #aaddff; opacity: 0.30; transparent: true; shader: flat"></a-sphere>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         CAUSTIC LIGHT RAYS
-    ══════════════════════════════════════════════════ -->
     <a-entity position="0 5 0">
-      <a-plane position="0 0 0"   rotation="0 10 0"  width="0.6" height="12"
-               material="color: #88ccff; opacity: 0.06; transparent: true; side: double; shader: flat"
-               animation="property: opacity; from: 0.04; to: 0.10; dir: alternate; loop: true; dur: 3000"></a-plane>
-      <a-plane position="2 0 0"   rotation="0 30 0"  width="0.4" height="10"
-               material="color: #88ccff; opacity: 0.05; transparent: true; side: double; shader: flat"
-               animation="property: opacity; from: 0.03; to: 0.08; dir: alternate; loop: true; dur: 2600"></a-plane>
-      <a-plane position="-2 0 0"  rotation="0 -20 0" width="0.5" height="11"
-               material="color: #88ccff; opacity: 0.05; transparent: true; side: double; shader: flat"
-               animation="property: opacity; from: 0.03; to: 0.09; dir: alternate; loop: true; dur: 3400"></a-plane>
-      <a-plane position="1 0 2"   rotation="0 -40 0" width="0.3" height="9"
-               material="color: #88ccff; opacity: 0.04; transparent: true; side: double; shader: flat"
-               animation="property: opacity; from: 0.02; to: 0.07; dir: alternate; loop: true; dur: 2800"></a-plane>
+      <a-plane rotation="0 10 0" width="0.6" height="12" material="color: #88ccff; opacity: 0.06; transparent: true; side: double; shader: flat" animation="property: material.opacity; from: 0.04; to: 0.10; dir: alternate; loop: true; dur: 3000"></a-plane>
+      <a-plane position="2 0 0" rotation="0 30 0" width="0.4" height="10" material="color: #88ccff; opacity: 0.05; transparent: true; side: double; shader: flat" animation="property: material.opacity; from: 0.03; to: 0.08; dir: alternate; loop: true; dur: 2600"></a-plane>
+      <a-plane position="-2 0 0" rotation="0 -20 0" width="0.5" height="11" material="color: #88ccff; opacity: 0.05; transparent: true; side: double; shader: flat" animation="property: material.opacity; from: 0.03; to: 0.09; dir: alternate; loop: true; dur: 3400"></a-plane>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ DOLPHINS (×3)
-    ══════════════════════════════════════════════════ -->
-    <!-- Dolphin 1 -->
-    <a-entity swim="radius: 8; speed: 0.55; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
-              animal-info="dolphin" class="clickable"
-              position="8 0 0">
-      <!-- Body -->
-      <a-ellipsoid width="0.5" height="0.28" depth="0.28" color="#5588aa" roughness="0.4" metalness="0.1"></a-ellipsoid>
-      <!-- Eyes -->
-      <a-sphere radius="0.025" color="white" position="-0.15 0.08 -0.22">
-        <a-sphere radius="0.012" color="black" position="0 0 -0.015"></a-sphere>
-      </a-sphere>
-      <a-sphere radius="0.025" color="white" position=" 0.15 0.08 -0.22">
-        <a-sphere radius="0.012" color="black" position="0 0 -0.015"></a-sphere>
-      </a-sphere>
-      <!-- Snout -->
-      <a-cone color="#4a7a99" radius-bottom="0.07" radius-top="0.02" height="0.28"
-              position="0 0 -0.38" rotation="90 0 0"></a-cone>
-      <!-- Dorsal fin -->
-      <a-cone color="#3a6a88" radius-bottom="0.07" radius-top="0.01" height="0.2"
-              position="0 0.19 0.05" rotation="0 0 -10"></a-cone>
-      <!-- Pectoral fins -->
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#4a7a99"
-                   position="-0.15 -0.06 -0.05" rotation="0 0 -35"></a-ellipsoid>
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#4a7a99"
-                   position="0.15 -0.06 -0.05" rotation="0 0 35"></a-ellipsoid>
-      <!-- Tail stock -->
-      <a-entity position="0 0 0.28" tail-wag="speed: 4; amplitude: 18">
-        <a-ellipsoid width="0.16" height="0.13" depth="0.16" color="#4a7a99"></a-ellipsoid>
-        <!-- Flukes -->
-        <a-ellipsoid width="0.04" height="0.08" depth="0.18" color="#3a6a88"
-                     position="-0.12 0 0.04" rotation="0 -20 0"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.08" depth="0.18" color="#3a6a88"
-                     position="0.12 0 0.04" rotation="0 20 0"></a-ellipsoid>
-      </a-entity>
+    <a-entity swim="radius: 8; speed: 0.55; yOffset: 0.3; yAmplitude: 0.45; tilt: 10" position="0 0 0">
+      <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.36 0.36 0.36" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
+    </a-entity>
+    <a-entity swim="radius: 6; speed: 0.75; yOffset: 0.7; yAmplitude: 0.35; tilt: 12" position="0 0 0">
+      <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.32 0.32 0.32" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
+    </a-entity>
+    <a-entity swim="radius: 10; speed: 0.4; yOffset: 1.0; yAmplitude: 0.45; tilt: 8" position="0 0 0">
+      <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.34 0.34 0.34" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
     </a-entity>
 
-    <!-- Dolphin 2 -->
-    <a-entity swim="radius: 6; speed: 0.7; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
-              animal-info="dolphin" class="clickable"
-              position="6 0.5 0">
-      <a-ellipsoid width="0.48" height="0.26" depth="0.26" color="#4d7f9e" roughness="0.4" metalness="0.1"></a-ellipsoid>
-      <a-sphere radius="0.022" color="white" position="-0.14 0.07 -0.21">
-        <a-sphere radius="0.01" color="black" position="0 0 -0.014"></a-sphere>
-      </a-sphere>
-      <a-sphere radius="0.022" color="white" position=" 0.14 0.07 -0.21">
-        <a-sphere radius="0.01" color="black" position="0 0 -0.014"></a-sphere>
-      </a-sphere>
-      <a-cone color="#426e8a" radius-bottom="0.065" radius-top="0.02" height="0.26"
-              position="0 0 -0.36" rotation="90 0 0"></a-cone>
-      <a-cone color="#325a75" radius-bottom="0.065" radius-top="0.01" height="0.18"
-              position="0 0.18 0.04" rotation="0 0 -8"></a-cone>
-      <a-entity position="0 0 0.27" tail-wag="speed: 5; amplitude: 20">
-        <a-ellipsoid width="0.14" height="0.12" depth="0.14" color="#426e8a"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.07" depth="0.16" color="#325a75"
-                     position="-0.11 0 0.03" rotation="0 -20 0"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.07" depth="0.16" color="#325a75"
-                     position="0.11 0 0.03" rotation="0 20 0"></a-ellipsoid>
-      </a-entity>
+    <a-entity swim="radius: 17; speed: 0.07; yOffset: -0.4; yAmplitude: 0.8; tilt: 5" position="0 0 0">
+      <a-entity obj-model="obj: #whale-obj; mtl: #whale-mtl" scale="3.1 3.1 3.1" rotation="0 180 0" animal-info="whale" class="clickable"></a-entity>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ WHALE (humpback)
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 14; speed: 0.05; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
-              animal-info="whale" class="clickable"
-              position="14 0 0">
-      <!-- Body -->
-      <a-ellipsoid width="3.8" height="1.1" depth="1.2" color="#2a3a55" roughness="0.45"></a-ellipsoid>
-      <!-- Eyes -->
-      <a-sphere radius="0.08" color="white" position="-0.8 0.2 -1.4">
-        <a-sphere radius="0.04" color="black" position="0 0 -0.05"></a-sphere>
-      </a-sphere>
-      <a-sphere radius="0.08" color="white" position=" 0.8 0.2 -1.4">
-        <a-sphere radius="0.04" color="black" position="0 0 -0.05"></a-sphere>
-      </a-sphere>
-      <!-- Snout Tubercles -->
-      <a-sphere radius="0.04" color="#1e2e4a" position="0 0.45 -1.9"></a-sphere>
-      <a-sphere radius="0.035" color="#1e2e4a" position="0.2 0.42 -1.8"></a-sphere>
-      <a-sphere radius="0.035" color="#1e2e4a" position="-0.2 0.42 -1.8"></a-sphere>
-      <!-- Lower jaw + Ventral Pleats -->
-      <a-entity position="0 -0.3 -1.8">
-        <a-ellipsoid width="1.4" height="0.6" depth="0.9" color="#354560"></a-ellipsoid>
-        <!-- Pleat lines -->
-        <a-cylinder radius="0.015" height="1.2" color="#2a3a55" position="0 -0.28 0" rotation="90 0 0"></a-cylinder>
-        <a-cylinder radius="0.012" height="1.1" color="#2a3a55" position="0.2 -0.25 0.05" rotation="90 0 0"></a-cylinder>
-        <a-cylinder radius="0.012" height="1.1" color="#2a3a55" position="-0.2 -0.25 0.05" rotation="90 0 0"></a-cylinder>
-      </a-entity>
-      <!-- Pectoral fins -->
-      <a-entity position="-1.0 -0.2 -0.5" rotation="0 0 -45">
-        <a-ellipsoid width="0.2" height="1.8" depth="0.4" color="#1e3048"></a-ellipsoid>
-      </a-entity>
-      <a-entity position=" 1.0 -0.2 -0.5" rotation="0 0  45">
-        <a-ellipsoid width="0.2" height="1.8" depth="0.4" color="#1e3048"></a-ellipsoid>
-      </a-entity>
-      <!-- Tail -->
-      <a-entity position="0 0 2.1" tail-wag="speed: 0.8; amplitude: 8">
-        <a-ellipsoid width="0.7" height="0.5" depth="0.6" color="#1a2a44"></a-ellipsoid>
-        <a-ellipsoid width="1.8" height="0.1" depth="0.8" color="#1a2a44" position="0 0 0.4"></a-ellipsoid>
-      </a-entity>
+    <a-entity swim="radius: 12; speed: 0.42; yOffset: -1.1; yAmplitude: 0.25; tilt: 4" position="0 0 0">
+      <a-entity obj-model="obj: #shark-obj; mtl: #shark-mtl" scale="0.78 0.78 0.78" rotation="0 180 0" animal-info="shark" class="clickable"></a-entity>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ GREAT WHITE SHARK
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 11; speed: 0.42; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
-              animal-info="shark" class="clickable"
-              position="11 -1 0">
-      <!-- Torpedo body -->
-      <a-ellipsoid width="2.2" height="0.6" depth="0.6" color="#7a8a99" roughness="0.3"></a-ellipsoid>
-      <!-- White belly -->
-      <a-ellipsoid width="2.0" height="0.3" depth="0.55" color="#eeeeee" position="0 -0.22 0"></a-ellipsoid>
-      <!-- Eyes -->
-      <a-sphere radius="0.04" color="white" position="-0.25 0.1 -0.85">
-        <a-sphere radius="0.025" color="black" position="0 0 -0.02"></a-sphere>
-      </a-sphere>
-      <a-sphere radius="0.04" color="white" position=" 0.25 0.1 -0.85">
-        <a-sphere radius="0.025" color="black" position="0 0 -0.02"></a-sphere>
-      </a-sphere>
-      <!-- Gills -->
-      <a-entity position="-0.5 0 -0.4" rotation="0 -10 0">
-        <a-cylinder radius="0.008" height="0.3" color="#5a6a78" position="0 0 0" rotation="0 0 10"></a-cylinder>
-        <a-cylinder radius="0.008" height="0.28" color="#5a6a78" position="0.08 0 0.02" rotation="0 0 10"></a-cylinder>
-        <a-cylinder radius="0.008" height="0.26" color="#5a6a78" position="0.16 0 0.04" rotation="0 0 10"></a-cylinder>
-      </a-entity>
-      <a-entity position=" 0.5 0 -0.4" rotation="0 10 0">
-        <a-cylinder radius="0.008" height="0.3" color="#5a6a78" position="0 0 0" rotation="0 0 -10"></a-cylinder>
-        <a-cylinder radius="0.008" height="0.28" color="#5a6a78" position="-0.08 0 0.02" rotation="0 0 -10"></a-cylinder>
-        <a-cylinder radius="0.008" height="0.26" color="#5a6a78" position="-0.16 0 0.04" rotation="0 0 -10"></a-cylinder>
-      </a-entity>
-      <!-- Fins -->
-      <a-cone color="#6a7a88" radius-bottom="0.2" height="0.7" position="0 0.45 -0.1" rotation="-10 0 0"></a-cone>
-      <!-- Asymmetric Tail -->
-      <a-entity position="0 0 1.2" tail-wag="speed: 3; amplitude: 15">
-        <a-cone color="#6a7a88" radius-bottom="0.15" height="1.0" position="0 0.4 0.2" rotation="30 0 0"></a-cone>
-        <a-cone color="#6a7a88" radius-bottom="0.12" height="0.45" position="0 -0.18 0.12" rotation="-35 0 0"></a-cone>
-      </a-entity>
+    <a-entity ray-glide="speed: 0.28; scaleX: 12; scaleZ: 7" position="0 -1.0 0">
+      <a-entity obj-model="obj: #manta-obj; mtl: #manta-mtl" scale="0.3 0.3 0.3" rotation="0 180 0" animal-info="ray" class="clickable"></a-entity>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ SEA TURTLE
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
-              animal-info="turtle" class="clickable"
-              position="7 -1.5 0">
-      <!-- Shell -->
+    <a-entity swim="radius: 4.5; speed: 1.35; yOffset: -0.8; yAmplitude: 0.3; tilt: 8; darting: true" position="0 0 0">
+      <a-entity obj-model="obj: #fish1-obj; mtl: #fish1-mtl" scale="0.065 0.065 0.065" rotation="0 180 0" position="0.5 0 0" animal-info="clownfish" class="clickable"></a-entity>
+      <a-entity obj-model="obj: #fish2-obj; mtl: #fish2-mtl" scale="0.055 0.055 0.055" rotation="0 180 0" position="-0.5 0.2 0.3" animal-info="clownfish" class="clickable"></a-entity>
+      <a-entity obj-model="obj: #fish3-obj; mtl: #fish3-mtl" scale="0.06 0.06 0.06" rotation="0 180 0" position="0 -0.3 -0.4" animal-info="clownfish" class="clickable"></a-entity>
+    </a-entity>
+
+    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.45; yAmplitude: 0.25; tilt: 5" animal-info="turtle" class="clickable" position="0 0 0">
       <a-ellipsoid width="0.75" height="0.32" depth="1.0" color="#3a6620"></a-ellipsoid>
-      <!-- Shell patterns (scutes) -->
-      <a-entity position="0 0.18 0">
-        <a-box width="0.25" height="0.02" depth="0.25" color="#2a5015" position="0 0 0" rotation="0 45 0"></a-box>
-        <a-box width="0.20" height="0.02" depth="0.20" color="#2a5015" position="0 0 -0.35" rotation="0 45 0"></a-box>
-        <a-box width="0.20" height="0.02" depth="0.20" color="#2a5015" position="0 0  0.35" rotation="0 45 0"></a-box>
-      </a-entity>
-      <!-- Head + Eyes -->
-      <a-entity position="0 0.05 -0.6">
-        <a-sphere radius="0.14" color="#4a5a30"></a-sphere>
-        <a-sphere radius="0.02" color="white" position="-0.08 0.04 -0.08">
-          <a-sphere radius="0.012" color="black" position="0 0 -0.01"></a-sphere>
-        </a-sphere>
-        <a-sphere radius="0.02" color="white" position=" 0.08 0.04 -0.08">
-          <a-sphere radius="0.012" color="black" position="0 0 -0.01"></a-sphere>
-        </a-sphere>
-      </a-entity>
-      <!-- Flippers -->
-      <a-entity position="-0.45 0 -0.2" rotation="0 0 -20" animation="property: rotation; from: 0 0 -20; to: 0 0 40; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine">
-        <a-ellipsoid width="0.55" height="0.04" depth="0.25" color="#3a5020" position="-0.25 0 0"></a-ellipsoid>
-      </a-entity>
-      <a-entity position="0.45 0 -0.2" rotation="0 0 20" animation="property: rotation; from: 0 0 20; to: 0 0 -40; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine">
-        <a-ellipsoid width="0.55" height="0.04" depth="0.25" color="#3a5020" position="0.25 0 0"></a-ellipsoid>
-      </a-entity>
+      <a-sphere radius="0.14" color="#4a5a30" position="0 0.05 -0.6"></a-sphere>
+      <a-ellipsoid width="0.5" height="0.08" depth="0.28" color="#3a5020" position="-0.42 -0.03 -0.14" rotation="0 -20 -15" animation="property: rotation; from: 0 -20 -15; to: 0 -20 -40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine"></a-ellipsoid>
+      <a-ellipsoid width="0.5" height="0.08" depth="0.28" color="#3a5020" position="0.42 -0.03 -0.14" rotation="0 20 15" animation="property: rotation; from: 0 20 15; to: 0 20 40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine"></a-ellipsoid>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ MANTA RAY
-    ══════════════════════════════════════════════════ -->
-    <a-entity ray-glide="speed: 0.28; scaleX: 12; scaleZ: 7"
-              animal-info="ray" class="clickable"
-              position="0 -1.0 0">
-      <!-- Body -->
-      <a-ellipsoid width="0.6" height="0.12" depth="1.0" color="#223344"></a-ellipsoid>
-      <!-- Cephalic horns + Eyes -->
-      <a-entity position="-0.22 0.02 -0.5" rotation="0 -25 0">
-        <a-ellipsoid width="0.06" height="0.1" depth="0.35" color="#1a2a38"></a-ellipsoid>
-        <a-sphere radius="0.015" color="white" position="-0.03 0.02 -0.1">
-          <a-sphere radius="0.01" color="black" position="0 0 -0.005"></a-sphere>
-        </a-sphere>
-      </a-entity>
-      <a-entity position=" 0.22 0.02 -0.5" rotation="0 25 0">
-        <a-ellipsoid width="0.06" height="0.1" depth="0.35" color="#1a2a38"></a-ellipsoid>
-        <a-sphere radius="0.015" color="white" position=" 0.03 0.02 -0.1">
-          <a-sphere radius="0.01" color="black" position="0 0 -0.005"></a-sphere>
-        </a-sphere>
-      </a-entity>
-      <!-- Mouth -->
-      <a-plane width="0.3" height="0.06" color="#111" position="0 -0.03 -0.55" rotation="-15 0 0"></a-plane>
-      <!-- Wings -->
-      <a-entity position="-0.8 0 0.1" animation="property: rotation; from: 0 0 -5; to: 0 0 12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine">
-        <a-ellipsoid width="0.08" height="0.07" depth="1.5" color="#1d2e3f" position="-0.6 0 0" rotation="0 15 0"></a-ellipsoid>
-      </a-entity>
-      <a-entity position="0.8 0 0.1" animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine">
-        <a-ellipsoid width="0.08" height="0.07" depth="1.5" color="#1d2e3f" position="0.6 0 0" rotation="0 -15 0"></a-ellipsoid>
-      </a-entity>
-      <a-cylinder color="#1a2832" radius="0.03" height="1.4" position="0 0 0.95" rotation="90 0 0"></a-cylinder>
+    <a-entity swim="radius: 5; speed: 0.22; yOffset: -2.3; yAmplitude: 0.35; tilt: 8" animal-info="octopus" class="clickable" position="0 0 0">
+      <a-ellipsoid width="0.45" height="0.55" depth="0.4" color="#cc3300" jelly-pulse="speed: 1.0"></a-ellipsoid>
+      <a-sphere radius="0.06" color="#ffee00" position="-0.15 0.1 -0.2"><a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere></a-sphere>
+      <a-sphere radius="0.06" color="#ffee00" position="0.15 0.1 -0.2"><a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere></a-sphere>
+      <a-cylinder color="#bb2200" radius="0.035" height="0.7" position="-0.18 -0.58 -0.1" rotation="25 0 -30" animation="property: rotation; from: 25 0 -30; to: 5 0 -55; dir: alternate; loop: true; dur: 1800"></a-cylinder>
+      <a-cylinder color="#bb2200" radius="0.032" height="0.65" position="0.18 -0.56 -0.1" rotation="25 0 30" animation="property: rotation; from: 25 0 30; to: 5 0 55; dir: alternate; loop: true; dur: 2000"></a-cylinder>
+      <a-cylinder color="#cc3300" radius="0.03" height="0.7" position="-0.1 -0.6 0.1" rotation="20 0 -15" animation="property: rotation; from: 20 0 -15; to: 40 0 -35; dir: alternate; loop: true; dur: 1600"></a-cylinder>
+      <a-cylinder color="#cc3300" radius="0.03" height="0.7" position="0.1 -0.6 0.1" rotation="20 0 15" animation="property: rotation; from: 20 0 15; to: 40 0 35; dir: alternate; loop: true; dur: 1700"></a-cylinder>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ SMALL FISH SCHOOL (Darting behavior)
-    ══════════════════════════════════════════════════ -->
-    <a-entity id="fish-school"
-              swim="radius: 4.5; speed: 1.2; yOffset: -0.8; yAmplitude: 0.3; tilt: 8; darting: true"
-              position="4 -0.8 0">
-      <a-entity position=" 0.0  0.0  0.0" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.14" height="0.07" depth="0.06" color="#ffcc00"></a-ellipsoid>
-        <a-sphere radius="0.012" color="black" position="-0.055 0.025 -0.06"></a-sphere>
-        <a-cone color="#ffaa00" radius-bottom="0.04" radius-top="0.01" height="0.07" position="0 0 0.08" rotation="-90 0 0"></a-cone>
-      </a-entity>
-      <a-entity position=" 0.2  0.1 -0.15" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.13" height="0.065" depth="0.055" color="#00ccff"></a-ellipsoid>
-        <a-sphere radius="0.011" color="black" position="-0.05 0.022 -0.055"></a-sphere>
-        <a-cone color="#0099cc" radius-bottom="0.036" radius-top="0.01" height="0.065" position="0 0 0.075" rotation="-90 0 0"></a-cone>
-      </a-entity>
-      <a-entity position="-0.25 -0.1 0.12" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.12" height="0.06" depth="0.05" color="#ff6688"></a-ellipsoid>
-        <a-sphere radius="0.011" color="black" position="-0.048 0.02 -0.05"></a-sphere>
-        <a-cone color="#dd4466" radius-bottom="0.033" radius-top="0.01" height="0.06" position="0 0 0.07" rotation="-90 0 0"></a-cone>
-      </a-entity>
+    <a-entity position="-4 -3.0 -5">
+      <a-cylinder color="#ff8800" radius="0.04" height="0.5" position="0 0.25 0" animation="property: rotation; from: 0 0 -8; to: 0 0 8; dir: alternate; loop: true; dur: 1500"></a-cylinder>
+      <a-cylinder color="#ff9900" radius="0.035" height="0.45" position="0.1 0.22 0.05" animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 1700"></a-cylinder>
+      <a-cylinder color="#ff7700" radius="0.035" height="0.45" position="-0.1 0.22 0.05" animation="property: rotation; from: 0 0 -5; to: 0 0 12; dir: alternate; loop: true; dur: 1400"></a-cylinder>
+      <a-sphere color="#dd6600" radius="0.15"></a-sphere>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ JELLYFISH (Luminous Minecraft-style)
-    ══════════════════════════════════════════════════ -->
-    <a-entity position="-3 1.5 -3"
-              swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="jellyfish" class="clickable">
-      <a-light type="point" color="#00ffff" intensity="1.5" distance="4"></a-light>
-      <a-sphere radius="0.28" color="#00ffff" opacity="0.7"
-                jelly-pulse="speed: 1.8; glow: true"
-                material="transparent: true; side: double; emissive: #00ffff; emissiveIntensity: 1"></a-sphere>
-      <a-sphere radius="0.18" color="#88ffff" opacity="0.4" material="transparent: true"></a-sphere>
-      <!-- Tentacles -->
-      <a-cylinder color="#00ffff" radius="0.012" height="0.9" position=" 0.1 -0.65 0" material="opacity: 0.7; transparent: true; emissive: #00ffff"
-                  animation="property: rotation; from: 0 0 -5; to: 0 0 15; dir: alternate; loop: true; dur: 2000"></a-cylinder>
-      <a-cylinder color="#00ffff" radius="0.012" height="0.8" position="-0.1 -0.6  0" material="opacity: 0.65; transparent: true; emissive: #00ffff"
-                  animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2300"></a-cylinder>
+    <a-entity position="-3 1.5 -3" swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.55; tilt: 0" animal-info="jellyfish" class="clickable">
+      <a-light type="point" color="#00ffff" intensity="1.4" distance="4"></a-light>
+      <a-sphere radius="0.28" color="#00ffff" opacity="0.6" jelly-pulse="speed: 1.8; glow: true" material="transparent: true; side: double; emissive: #00ffff; emissiveIntensity: 1"></a-sphere>
+      <a-cylinder color="#00ffff" radius="0.012" height="0.9" position="0.1 -0.65 0" material="opacity: 0.7; transparent: true; emissive: #00ffff" animation="property: rotation; from: 0 0 -5; to: 0 0 15; dir: alternate; loop: true; dur: 2000"></a-cylinder>
+      <a-cylinder color="#00ffff" radius="0.012" height="0.8" position="-0.1 -0.6 0" material="opacity: 0.65; transparent: true; emissive: #00ffff" animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2300"></a-cylinder>
     </a-entity>
 
-    <a-entity position="3 2.0 4"
-              swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="jellyfish" class="clickable">
-      <a-light type="point" color="#00ffff" intensity="1.2" distance="3"></a-light>
-      <a-sphere radius="0.22" color="#00ffff" opacity="0.6"
-                jelly-pulse="speed: 2.0; glow: true"
-                material="transparent: true; side: double; emissive: #00ffff; emissiveIntensity: 1"></a-sphere>
-      <a-sphere radius="0.14" color="#88ffff" opacity="0.35" material="transparent: true"></a-sphere>
-      <a-cylinder color="#00ffff" radius="0.010" height="0.75" position=" 0.08 -0.52 0" material="opacity: 0.65; transparent: true; emissive: #00ffff"
-                  animation="property: rotation; from: 0 0 -6; to: 0 0 14; dir: alternate; loop: true; dur: 2200"></a-cylinder>
+    <a-entity position="3 2.0 4" swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0" animal-info="jellyfish" class="clickable">
+      <a-light type="point" color="#88ccff" intensity="1.2" distance="4"></a-light>
+      <a-sphere radius="0.22" color="#88ccff" opacity="0.55" jelly-pulse="speed: 2.0; glow: true" material="transparent: true; side: double; emissive: #88ccff; emissiveIntensity: 1"></a-sphere>
+      <a-cylinder color="#aaddff" radius="0.01" height="0.75" position="0.08 -0.52 0" material="opacity: 0.65; transparent: true; emissive: #88ccff" animation="property: rotation; from: 0 0 -6; to: 0 0 14; dir: alternate; loop: true; dur: 2200"></a-cylinder>
+      <a-cylinder color="#aaddff" radius="0.01" height="0.68" position="-0.08 -0.49 0" material="opacity: 0.6; transparent: true; emissive: #88ccff" animation="property: rotation; from: 0 0 6; to: 0 0 -11; dir: alternate; loop: true; dur: 2400"></a-cylinder>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         SEA FLOOR & DECOR
-    ══════════════════════════════════════════════════ -->
-    <a-plane position="0 -4 0" rotation="-90 0 0" width="80" height="80" material="color: #0d2b1a; roughness: 1"></a-plane>
-    <a-entity id="bubbles">
-      <a-sphere bubble-rise="speed: 0.5" radius="0.04" material="color: #aaddff; opacity: 0.35; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.7" radius="0.06" material="color: #aaddff; opacity: 0.30; transparent: true; shader: flat"></a-sphere>
-      <a-sphere bubble-rise="speed: 0.4" radius="0.03" material="color: #aaddff; opacity: 0.40; transparent: true; shader: flat"></a-sphere>
+    <a-entity position="0 1.8 -4">
+      <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88" material="transparent: true"></a-plane>
+      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
     </a-entity>
 
+    <a-entity position="4.5 1.8 -3.5" rotation="0 -40 0">
+      <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85" material="transparent: true"></a-plane>
+      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nRaie manta\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+    </a-entity>
+
+    <a-entity id="plankton">
+      <a-sphere radius="0.02" color="#aaffee" opacity="0.55" position="3 0.5 -6" material="shader: flat; transparent: true" animation="property: position; from: 3 0.5 -6; to: 3.3 0.8 -6; dir: alternate; loop: true; dur: 3000"></a-sphere>
+      <a-sphere radius="0.025" color="#88ffcc" opacity="0.50" position="-4 1.2 5" material="shader: flat; transparent: true" animation="property: position; from: -4 1.2 5; to: -4.2 1.5 5; dir: alternate; loop: true; dur: 3500"></a-sphere>
+      <a-sphere radius="0.018" color="#ccffee" opacity="0.60" position="6 -0.8 3" material="shader: flat; transparent: true" animation="property: position; from: 6 -0.8 3; to: 6.2 -0.5 3; dir: alternate; loop: true; dur: 2800"></a-sphere>
+      <a-sphere radius="0.022" color="#aaffdd" opacity="0.52" position="-2 2.0 -7" material="shader: flat; transparent: true" animation="property: position; from: -2 2.0 -7; to: -2.3 2.3 -7; dir: alternate; loop: true; dur: 4000"></a-sphere>
+    </a-entity>
   </a-scene>
-
-  <!-- ══════════════════════════════════════════════════
-       PRIMITIVES & GEOMETRY
-  ══════════════════════════════════════════════════ -->
-  <script>
-    AFRAME.registerGeometry('ellipsoid', {
-      schema: { width: {default:1}, height:{default:1}, depth:{default:1}, segments:{default:16} },
-      init(data) {
-        const geo = new THREE.SphereGeometry(0.5, data.segments, data.segments);
-        geo.scale(data.width, data.height, data.depth);
-        this.geometry = geo;
-      }
-    });
-    AFRAME.registerPrimitive('a-ellipsoid', {
-      defaultComponents: { geometry: { primitive: 'ellipsoid' }, material: {} },
-      mappings: { width:'geometry.width', height:'geometry.height', depth:'geometry.depth', color:'material.color', opacity:'material.opacity', roughness:'material.roughness', metalness:'material.metalness' }
-    });
-  </script>
 </body>
 </html>
