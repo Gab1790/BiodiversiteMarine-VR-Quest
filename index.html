@@ -2009,10 +2009,14 @@
         schema: { type: 'string', default: '' },
         init() {
           this.panelAppended = false;
+          this.hudAppended = false;
           this.panelVisible = false;
           this.panel = this.buildPanel();
+          this.hud = this.buildHud();
           this._animalWorldPos = new THREE.Vector3();
+          this._cameraWorldPos = new THREE.Vector3();
           this._cameraRight = new THREE.Vector3();
+          this._panelDirection = new THREE.Vector3();
           this._panelPos = new THREE.Vector3();
           this._panelOffsetX = 0.5;
           this._panelOffsetY = 0.5;
@@ -2038,7 +2042,7 @@
           bg.dataset.ui = 'info';
           bg.setAttribute('width', '2.0');
           bg.setAttribute('height', '1.25');
-          bg.setAttribute('material', 'color: #001a3a; opacity: 0.88; transparent: true; side: double');
+          bg.setAttribute('material', 'color: #001a3a; opacity: 0.88; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
           panel.appendChild(bg);
 
           this.nameEl = document.createElement('a-text');
@@ -2049,6 +2053,7 @@
           this.nameEl.setAttribute('wrap-count', '28');
           this.nameEl.setAttribute('position', '-0.92 0.5 0.01');
           this.nameEl.setAttribute('font', 'dejavu');
+          this.nameEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
           panel.appendChild(this.nameEl);
 
           this.textEl = document.createElement('a-text');
@@ -2060,15 +2065,58 @@
           this.textEl.setAttribute('line-height', '50');
           this.textEl.setAttribute('position', '-0.92 0.25 0.01');
           this.textEl.setAttribute('font', 'dejavu');
+          this.textEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
           panel.appendChild(this.textEl);
 
           return panel;
+        },
+        buildHud() {
+          const hud = document.createElement('a-entity');
+          hud.setAttribute('visible', 'false');
+          hud.dataset.ui = 'info';
+          hud.setAttribute('position', '0 -0.38 -1.15');
+
+          const bg = document.createElement('a-plane');
+          bg.dataset.ui = 'info';
+          bg.setAttribute('width', '2.35');
+          bg.setAttribute('height', '0.78');
+          bg.setAttribute('material', 'color: #001a3a; opacity: 0.92; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
+          hud.appendChild(bg);
+
+          this.hudTitleEl = document.createElement('a-text');
+          this.hudTitleEl.dataset.ui = 'info';
+          this.hudTitleEl.setAttribute('color', '#7fe8ff');
+          this.hudTitleEl.setAttribute('align', 'left');
+          this.hudTitleEl.setAttribute('width', '2.15');
+          this.hudTitleEl.setAttribute('wrap-count', '28');
+          this.hudTitleEl.setAttribute('position', '-1.08 0.24 0.01');
+          this.hudTitleEl.setAttribute('font', 'dejavu');
+          this.hudTitleEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
+          hud.appendChild(this.hudTitleEl);
+
+          this.hudTextEl = document.createElement('a-text');
+          this.hudTextEl.dataset.ui = 'info';
+          this.hudTextEl.setAttribute('color', '#e0f4ff');
+          this.hudTextEl.setAttribute('align', 'left');
+          this.hudTextEl.setAttribute('width', '2.15');
+          this.hudTextEl.setAttribute('wrap-count', '40');
+          this.hudTextEl.setAttribute('line-height', '48');
+          this.hudTextEl.setAttribute('position', '-1.08 -0.03 0.01');
+          this.hudTextEl.setAttribute('font', 'dejavu');
+          this.hudTextEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
+          hud.appendChild(this.hudTextEl);
+
+          return hud;
         },
         refreshText() {
           const d = ANIMALS[this.data];
           if (!d || !this.nameEl || !this.textEl) return;
           this.nameEl.setAttribute('value', d.name);
           this.textEl.setAttribute('value', d.text);
+          if (this.hudTitleEl && this.hudTextEl) {
+            this.hudTitleEl.setAttribute('value', d.name);
+            this.hudTextEl.setAttribute('value', d.text);
+          }
         },
         setupPanel() {
           if (this.panelAppended) return;
@@ -2084,7 +2132,18 @@
           this._panelOffsetY = size.y * panelHeightScale + panelHeightPadding;
           // Attach to scene root so the panel inherits no animal rotation or scale.
           this.el.sceneEl.appendChild(this.panel);
+          this.panel.object3D.renderOrder = 999;
           this.panelAppended = true;
+        },
+        setupHud() {
+          if (this.hudAppended) return;
+          this.refreshText();
+          const scene = this.el.sceneEl;
+          const camera = scene && scene.camera;
+          if (!camera) return;
+          camera.parentEl.appendChild(this.hud);
+          this.hud.object3D.renderOrder = 1000;
+          this.hudAppended = true;
         },
         tick() {
           if (!this.panelVisible || !this.panelAppended) return;
@@ -2092,22 +2151,29 @@
           if (!camera) return;
           // Get animal world position.
           this.el.object3D.getWorldPosition(this._animalWorldPos);
-          // Extract camera right vector (column 0 of matrixWorld), projected horizontally.
-          const e = camera.matrixWorld.elements;
-          this._cameraRight.set(e[0], 0, e[2]).normalize();
-          // Place panel to the camera's right of the animal, slightly above centre.
+          camera.getWorldPosition(this._cameraWorldPos);
+          // Keep the panel on the camera-facing side of the animal so it stays in view in VR.
+          this._panelDirection.copy(this._cameraWorldPos).sub(this._animalWorldPos);
+          this._panelDirection.y = 0;
+          if (this._panelDirection.lengthSq() < 0.0001) {
+            const e = camera.matrixWorld.elements;
+            this._panelDirection.set(e[0], 0, e[2]);
+          }
+          this._panelDirection.normalize();
           this._panelPos.set(
-            this._animalWorldPos.x + this._cameraRight.x * this._panelOffsetX,
+            this._animalWorldPos.x + this._panelDirection.x * this._panelOffsetX,
             this._animalWorldPos.y + this._panelOffsetY,
-            this._animalWorldPos.z + this._cameraRight.z * this._panelOffsetX
+            this._animalWorldPos.z + this._panelDirection.z * this._panelOffsetX
           );
           this.panel.object3D.position.copy(this._panelPos);
         },
         show() {
           clearTimeout(this._hideTimer);
           this.setupPanel();
+          this.setupHud();
           this.panelVisible = true;
           this.panel.setAttribute('visible', 'true');
+          if (this.hud) this.hud.setAttribute('visible', 'true');
         },
         hide() {
           clearTimeout(this._hideTimer);
@@ -2116,12 +2182,18 @@
               this.panelVisible = false;
               this.panel.setAttribute('visible', 'false');
             }
+            if (this.hud) {
+              this.hud.setAttribute('visible', 'false');
+            }
           }, 3000);
         },
         remove() {
           clearTimeout(this._hideTimer);
           if (this.panel && this.panel.parentNode) {
             this.panel.parentNode.removeChild(this.panel);
+          }
+          if (this.hud && this.hud.parentNode) {
+            this.hud.parentNode.removeChild(this.hud);
           }
         }
       });
