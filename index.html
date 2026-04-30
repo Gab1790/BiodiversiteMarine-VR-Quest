@@ -349,6 +349,12 @@
       <a-asset-item id="fish2-mtl" src="pack/OBJ/Fish2.mtl"></a-asset-item>
       <a-asset-item id="fish3-obj" src="pack/OBJ/Fish3.obj"></a-asset-item>
       <a-asset-item id="fish3-mtl" src="pack/OBJ/Fish3.mtl"></a-asset-item>
+      <a-asset-item id="octopus-obj" src="pack/octopus/Octopus.obj"></a-asset-item>
+      <a-asset-item id="octopus-mtl" src="pack/octopus/Octopus.mtl"></a-asset-item>
+      <a-asset-item id="jellyfish-obj" src="pack/jellyfish/NOVELO_JELLYFISH.obj"></a-asset-item>
+      <a-asset-item id="jellyfish-mtl" src="pack/jellyfish/NOVELO_JELLYFISH.mtl"></a-asset-item>
+      <a-asset-item id="turtle-obj" src="pack/turtle/NOVELO_TURTLE.obj"></a-asset-item>
+      <a-asset-item id="turtle-mtl" src="pack/turtle/NOVELO_TURTLE.mtl"></a-asset-item>
       <audio id="ambient-sound" src="https://cdn.aframe.io/basic-guide/audio/backgroundnoise.wav" preload="auto" crossorigin="anonymous"></audio>
     </a-assets>
 
@@ -453,21 +459,26 @@
       <a-entity obj-model="obj: #fish3-obj; mtl: #fish3-mtl" scale="0.06 0.06 0.06" rotation="0 180 0" position="0 -0.3 -0.4" animal-info="clownfish" class="clickable"></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.45; yAmplitude: 0.25; tilt: 5" animal-info="turtle" class="clickable" position="0 0 0">
-      <a-ellipsoid width="0.75" height="0.32" depth="1.0" color="#3a6620"></a-ellipsoid>
-      <a-sphere radius="0.14" color="#4a5a30" position="0 0.05 -0.6"></a-sphere>
-      <a-ellipsoid width="0.5" height="0.08" depth="0.28" color="#3a5020" position="-0.42 -0.03 -0.14" rotation="0 -20 -15" animation="property: rotation; from: 0 -20 -15; to: 0 -20 -40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine"></a-ellipsoid>
-      <a-ellipsoid width="0.5" height="0.08" depth="0.28" color="#3a5020" position="0.42 -0.03 -0.14" rotation="0 20 15" animation="property: rotation; from: 0 20 15; to: 0 20 40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine"></a-ellipsoid>
+    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.45; yAmplitude: 0.25; tilt: 5" position="0 0 0">
+      <a-entity
+        obj-model="obj: #turtle-obj; mtl: #turtle-mtl"
+        scale="0.004 0.004 0.004"
+        rotation="0 180 0"
+        animal-info="turtle"
+        class="clickable"
+        animation="property: rotation; from: 0 176 -2; to: 0 184 2; dir: alternate; loop: true; dur: 2400; easing: easeInOutSine"
+      ></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 5; speed: 0.22; yOffset: -2.3; yAmplitude: 0.35; tilt: 8" animal-info="octopus" class="clickable" position="0 0 0">
-      <a-ellipsoid width="0.45" height="0.55" depth="0.4" color="#cc3300" jelly-pulse="speed: 1.0"></a-ellipsoid>
-      <a-sphere radius="0.06" color="#ffee00" position="-0.15 0.1 -0.2"><a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere></a-sphere>
-      <a-sphere radius="0.06" color="#ffee00" position="0.15 0.1 -0.2"><a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere></a-sphere>
-      <a-cylinder color="#bb2200" radius="0.035" height="0.7" position="-0.18 -0.58 -0.1" rotation="25 0 -30" animation="property: rotation; from: 25 0 -30; to: 5 0 -55; dir: alternate; loop: true; dur: 1800"></a-cylinder>
-      <a-cylinder color="#bb2200" radius="0.032" height="0.65" position="0.18 -0.56 -0.1" rotation="25 0 30" animation="property: rotation; from: 25 0 30; to: 5 0 55; dir: alternate; loop: true; dur: 2000"></a-cylinder>
-      <a-cylinder color="#cc3300" radius="0.03" height="0.7" position="-0.1 -0.6 0.1" rotation="20 0 -15" animation="property: rotation; from: 20 0 -15; to: 40 0 -35; dir: alternate; loop: true; dur: 1600"></a-cylinder>
-      <a-cylinder color="#cc3300" radius="0.03" height="0.7" position="0.1 -0.6 0.1" rotation="20 0 15" animation="property: rotation; from: 20 0 15; to: 40 0 35; dir: alternate; loop: true; dur: 1700"></a-cylinder>
+    <a-entity swim="radius: 5; speed: 0.22; yOffset: -2.3; yAmplitude: 0.35; tilt: 8" position="0 0 0">
+      <a-entity
+        obj-model="obj: #octopus-obj; mtl: #octopus-mtl"
+        scale="0.08 0.08 0.08"
+        rotation="0 180 0"
+        animal-info="octopus"
+        class="clickable"
+        animation="property: scale; from: 0.076 0.076 0.076; to: 0.084 0.084 0.084; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine"
+      ></a-entity>
     </a-entity>
 
     <a-entity position="-4 -3.0 -5">
@@ -477,18 +488,28 @@
       <a-sphere color="#dd6600" radius="0.15"></a-sphere>
     </a-entity>
 
-    <a-entity position="-3 1.5 -3" swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.55; tilt: 0" animal-info="jellyfish" class="clickable">
+    <a-entity position="-3 1.5 -3" swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.55; tilt: 0">
       <a-light type="point" color="#00ffff" intensity="1.4" distance="4"></a-light>
-      <a-sphere radius="0.28" color="#00ffff" opacity="0.6" jelly-pulse="speed: 1.8; glow: true" material="transparent: true; side: double; emissive: #00ffff; emissiveIntensity: 1"></a-sphere>
-      <a-cylinder color="#00ffff" radius="0.012" height="0.9" position="0.1 -0.65 0" material="opacity: 0.7; transparent: true; emissive: #00ffff" animation="property: rotation; from: 0 0 -5; to: 0 0 15; dir: alternate; loop: true; dur: 2000"></a-cylinder>
-      <a-cylinder color="#00ffff" radius="0.012" height="0.8" position="-0.1 -0.6 0" material="opacity: 0.65; transparent: true; emissive: #00ffff" animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2300"></a-cylinder>
+      <a-entity
+        obj-model="obj: #jellyfish-obj; mtl: #jellyfish-mtl"
+        scale="0.005 0.005 0.005"
+        rotation="0 0 0"
+        animal-info="jellyfish"
+        class="clickable"
+        animation="property: scale; from: 0.0047 0.0047 0.0047; to: 0.0054 0.0054 0.0054; dir: alternate; loop: true; dur: 1700; easing: easeInOutSine"
+      ></a-entity>
     </a-entity>
 
-    <a-entity position="3 2.0 4" swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0" animal-info="jellyfish" class="clickable">
+    <a-entity position="3 2.0 4" swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0">
       <a-light type="point" color="#88ccff" intensity="1.2" distance="4"></a-light>
-      <a-sphere radius="0.22" color="#88ccff" opacity="0.55" jelly-pulse="speed: 2.0; glow: true" material="transparent: true; side: double; emissive: #88ccff; emissiveIntensity: 1"></a-sphere>
-      <a-cylinder color="#aaddff" radius="0.01" height="0.75" position="0.08 -0.52 0" material="opacity: 0.65; transparent: true; emissive: #88ccff" animation="property: rotation; from: 0 0 -6; to: 0 0 14; dir: alternate; loop: true; dur: 2200"></a-cylinder>
-      <a-cylinder color="#aaddff" radius="0.01" height="0.68" position="-0.08 -0.49 0" material="opacity: 0.6; transparent: true; emissive: #88ccff" animation="property: rotation; from: 0 0 6; to: 0 0 -11; dir: alternate; loop: true; dur: 2400"></a-cylinder>
+      <a-entity
+        obj-model="obj: #jellyfish-obj; mtl: #jellyfish-mtl"
+        scale="0.004 0.004 0.004"
+        rotation="0 35 0"
+        animal-info="jellyfish"
+        class="clickable"
+        animation="property: scale; from: 0.0037 0.0037 0.0037; to: 0.0044 0.0044 0.0044; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"
+      ></a-entity>
     </a-entity>
 
     <a-entity position="0 1.8 -4">
