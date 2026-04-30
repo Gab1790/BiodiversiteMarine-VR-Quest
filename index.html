@@ -150,28 +150,32 @@
           panel.setAttribute('face-camera', '');
 
           const bg = document.createElement('a-plane');
-          bg.setAttribute('width', '1.8');
-          bg.setAttribute('height', '1.15');
+          const bgWidthBase = 1.8;
+          const bgHeightBase = 1.15;
+          bg.setAttribute('width', String(bgWidthBase));
+          bg.setAttribute('height', String(bgHeightBase));
           bg.setAttribute('material', 'color: #001a3a; opacity: 0.9; transparent: true; side: double; shader: flat; depthTest: false; depthWrite: false');
           panel.appendChild(bg);
 
           const titleEl = document.createElement('a-text');
+          const titleWidthBase = 1.65;
           titleEl.setAttribute('color', '#00d4ff');
           titleEl.setAttribute('align', 'left');
-          titleEl.setAttribute('width', '1.65');
+          titleEl.setAttribute('width', String(titleWidthBase));
           titleEl.setAttribute('wrap-count', '28');
-          titleEl.setAttribute('position', '-0.8 0.45 0.01');
+          titleEl.setAttribute('position', `-${(titleWidthBase/2 - 0.15).toFixed(2)} ${ (bgHeightBase/2 - 0.18).toFixed(2)} 0.01`);
           titleEl.setAttribute('font', 'dejavu');
           titleEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
           panel.appendChild(titleEl);
 
           const textEl = document.createElement('a-text');
+          const textWidthBase = 1.65;
           textEl.setAttribute('color', '#e0f4ff');
           textEl.setAttribute('align', 'left');
-          textEl.setAttribute('width', '1.65');
+          textEl.setAttribute('width', String(textWidthBase));
           textEl.setAttribute('wrap-count', '40');
           textEl.setAttribute('line-height', '50');
-          textEl.setAttribute('position', '-0.8 0.18 0.01');
+          textEl.setAttribute('position', `-${(textWidthBase/2 - 0.15).toFixed(2)} ${ (bgHeightBase/2 - 0.52).toFixed(2)} 0.01`);
           textEl.setAttribute('font', 'dejavu');
           textEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
           panel.appendChild(textEl);
@@ -181,8 +185,13 @@
 
           scene.__animalInfoShared = {
             panel,
+            bg,
+            bgWidthBase,
+            bgHeightBase,
             titleEl,
+            titleWidthBase,
             textEl,
+            textWidthBase,
             activeEl: null
           };
           return scene.__animalInfoShared;
@@ -262,6 +271,30 @@
             this._animalWorldPos.z + this._panelDirection.z * this._panelOffsetX
           );
           panel.object3D.position.copy(this._panelPos);
+          // Update shared panel size/positions based on distance so far-away animals get larger panels
+          const camPos = this._cameraWorldPos;
+          const dist = camPos.distanceTo(this._animalWorldPos);
+          this.updateSharedLayout(dist);
+        },
+
+        updateSharedLayout(dist) {
+          if (!this.shared) return;
+          const s = this.shared;
+          // scale increases with distance (animals far away get larger panels)
+          const base = 1.0;
+          const scale = Math.min(2.5, Math.max(0.9, base + (dist - 3.0) * 0.18));
+          const bgW = s.bgWidthBase * scale;
+          const bgH = s.bgHeightBase * scale;
+          s.bg.setAttribute('width', String(bgW));
+          s.bg.setAttribute('height', String(bgH));
+          // compute left offset for text elements (small padding)
+          const left = -(bgW / 2) + 0.12;
+          const titleY = (bgH / 2) - 0.18;
+          const textY = titleY - 0.42 * scale;
+          s.titleEl.setAttribute('width', String(s.titleWidthBase * scale));
+          s.titleEl.setAttribute('position', `${left.toFixed(3)} ${titleY.toFixed(3)} 0.01`);
+          s.textEl.setAttribute('width', String(s.textWidthBase * scale));
+          s.textEl.setAttribute('position', `${left.toFixed(3)} ${textY.toFixed(3)} 0.01`);
         },
         show() {
           clearTimeout(this._hideTimer);
