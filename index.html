@@ -125,6 +125,7 @@
           this.fallbackTitleEl = null;
           this.fallbackTextEl = null;
           this.panelVisible = false;
+          this._isIntersected = false;
           this.panel = this.buildPanel();
           this.hud = this.buildHud();
           this._animalWorldPos = new THREE.Vector3();
@@ -137,6 +138,14 @@
           this.el.addEventListener('mouseenter', () => this.show());
           this.el.addEventListener('mouseleave', () => this.hide());
           this.el.addEventListener('click',      () => this.show());
+          this.el.addEventListener('raycaster-intersected', () => {
+            this._isIntersected = true;
+            this.show();
+          });
+          this.el.addEventListener('raycaster-intersected-cleared', () => {
+            this._isIntersected = false;
+            this.hide();
+          });
           if (this.el.hasLoaded) {
             this.setupPanel();
           } else {
@@ -331,6 +340,7 @@
           this.showFallbackOverlay();
         },
         hide() {
+          if (this._isIntersected) return;
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
             if (this.panel) {
@@ -488,6 +498,7 @@
     <a-entity id="rig" position="0 0 0">
       <a-camera position="0 1.6 0" look-controls wasd-controls>
         <a-cursor
+          rayOrigin="mouse"
           fuse="true"
           fuse-timeout="1500"
           raycaster="objects: .clickable"
