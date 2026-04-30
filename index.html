@@ -179,6 +179,7 @@
         show() {
           clearTimeout(this._hideTimer);
           this.setupPanel();
+          this.panelVisible = true;
           this.panel.setAttribute('visible', 'true');
         },
         hide() {
@@ -197,7 +198,6 @@
       });
 
       /* ---- Color boost component ---- */
-      this.panelVisible = true;
       AFRAME.registerComponent('color-boost', {
         schema: { saturation: { default: 0.2 }, lightness: { default: 0.08 } },
         init() {
