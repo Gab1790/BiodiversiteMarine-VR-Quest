@@ -138,14 +138,31 @@
           this._interactionBound = false;
           this.bindInteractionListeners(this.el);
           this.bindInteractionTargets();
+          const scene = this.el.sceneEl;
+          if (scene) {
+            scene.addEventListener('enter-vr', () => this.hideFallbackOverlay());
+            scene.addEventListener('exit-vr', () => this.hideAllSceneInfo());
+          }
           if (this.el.hasLoaded) {
-            this.setupPanel();
+            this.bindInteractionTargets();
+            this.hideAllSceneInfo();
           } else {
             this.el.addEventListener('loaded', () => {
-              this.setupPanel();
               this.bindInteractionTargets();
+              this.hideAllSceneInfo();
             });
           }
+        },
+        hideAllSceneInfo() {
+          this.panelVisible = false;
+          if (this.panel) this.panel.setAttribute('visible', 'false');
+          if (this.hud) this.hud.setAttribute('visible', 'false');
+          const scene = this.el.sceneEl;
+          if (!scene) return;
+          const infos = scene.querySelectorAll('[data-ui="info"]');
+          infos.forEach((el) => {
+            if (el && el.setAttribute) el.setAttribute('visible', 'false');
+          });
         },
         bindInteractionListeners(target) {
           target.addEventListener('mouseenter', () => this.show());
@@ -364,9 +381,7 @@
             this.panel.setAttribute('visible', 'true');
             if (this.hud) this.hud.setAttribute('visible', 'true');
           } else {
-            this.panelVisible = false;
-            if (this.panel) this.panel.setAttribute('visible', 'false');
-            if (this.hud) this.hud.setAttribute('visible', 'false');
+            this.hideAllSceneInfo();
           }
           this.showFallbackOverlay();
         },
