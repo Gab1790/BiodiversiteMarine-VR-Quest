@@ -85,17 +85,9 @@
           name: "🐙 Pieuvre Commune (Octopus vulgaris)",
           text: "Mollusque céphalopode doté de 8 bras couverts de ventouses. Animal le plus intelligent parmi les invertébrés : il ouvre des bocaux, mémorise des parcours et joue. Peut changer de couleur et de texture en millisecondes pour se camoufler. Durée de vie : 1–2 ans."
         },
-        clownfish: {
-          name: "🐠 Poisson Clown (Amphiprioninae)",
-          text: "Petit poisson vivant en symbiose avec les anémones de mer. Son mucus le protège des cellules urticantes de l'anémone. Tous les poissons clown naissent mâles – le dominant peut devenir femelle (hermaphrodisme protandrique). Endémique de l'Indo-Pacifique."
-        },
         ray: {
           name: "🦩 Raie Manta (Mobula birostris)",
           text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau par rapport à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
-        },
-        jellyfish: {
-          name: "🪼 Méduse (Scyphozoa)",
-          text: "Invertébré marin gélatineux sans cerveau ni cœur, composé à 95 % d'eau. Se déplace en contractant sa cloche pour expulser l'eau. Ses tentacules urticants paralysent les proies (zooplancton, petits poissons). Certaines espèces sont biologiquement immortelles (Turritopsis dohrnii). Présente dans tous les océans."
         }
       };
 
@@ -792,51 +784,7 @@
       </a-entity>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ CLOWN FISH (×2 around a coral anemone)
-    ══════════════════════════════════════════════════ -->
-    <!-- Anemone base -->
-    <a-entity position="-4 -3.0 -5">
-      <!-- Tentacles (oscillating cylinders) -->
-      <a-cylinder color="#ff8800" radius="0.04" height="0.5" position="0 0.25 0"
-                  animation="property: rotation; from: 0 0 -8; to: 0 0 8; dir: alternate; loop: true; dur: 1500"></a-cylinder>
-      <a-cylinder color="#ff9900" radius="0.035" height="0.45" position="0.1 0.22 0.05"
-                  animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 1700"></a-cylinder>
-      <a-cylinder color="#ff7700" radius="0.035" height="0.45" position="-0.1 0.22 0.05"
-                  animation="property: rotation; from: 0 0 -5; to: 0 0 12; dir: alternate; loop: true; dur: 1400"></a-cylinder>
-      <a-cylinder color="#ff8800" radius="0.03" height="0.4" position="0.08 0.20 -0.08"
-                  animation="property: rotation; from: 0 0 10; to: 0 0 -6; dir: alternate; loop: true; dur: 1600"></a-cylinder>
-      <a-cylinder color="#ffaa00" radius="0.03" height="0.4" position="-0.08 0.20 -0.08"
-                  animation="property: rotation; from: 0 0 -10; to: 0 0 6; dir: alternate; loop: true; dur: 1300"></a-cylinder>
-      <a-sphere color="#dd6600" radius="0.15" position="0 0 0"></a-sphere>
-    </a-entity>
 
-    <!-- Clown fish 1 -->
-    <a-entity swim="radius: 0.6; speed: 1.15; yOffset: -3.0; yAmplitude: 0.12; tilt: 15"
-              animal-info="clownfish" color-boost class="clickable"
-              position="-4 -3.0 -5" scale="1.6 1.6 1.6">
-      <a-ellipsoid width="0.18" height="0.1" depth="0.08" color="#ff5500"></a-ellipsoid>
-      <!-- White stripes -->
-      <a-box width="0.05" height="0.11" depth="0.09" color="#ffffff" position="-0.03 0 0"></a-box>
-      <a-box width="0.04" height="0.1" depth="0.09" color="#ffffff" position=" 0.06 0 0"></a-box>
-      <!-- Tail -->
-      <a-cone color="#ff7700" radius-bottom="0.05" radius-top="0.01" height="0.08"
-              position="0 0 0.1" rotation="-90 0 0"></a-cone>
-      <!-- Eye -->
-      <a-sphere radius="0.015" color="#111" position="-0.07 0.03 -0.08"></a-sphere>
-    </a-entity>
-
-    <!-- Clown fish 2 -->
-    <a-entity swim="radius: 0.7; speed: 1.3; yOffset: -2.85; yAmplitude: 0.14; tilt: 18"
-              animal-info="clownfish" color-boost class="clickable"
-              position="-3.8 -2.85 -5.2" scale="1.6 1.6 1.6">
-      <a-ellipsoid width="0.16" height="0.09" depth="0.07" color="#ff4400"></a-ellipsoid>
-      <a-box width="0.045" height="0.10" depth="0.08" color="#ffffff" position="-0.025 0 0"></a-box>
-      <a-box width="0.035" height="0.09" depth="0.08" color="#ffffff" position=" 0.055 0 0"></a-box>
-      <a-cone color="#ff6600" radius-bottom="0.045" radius-top="0.01" height="0.07"
-              position="0 0 0.09" rotation="-90 0 0"></a-cone>
-      <a-sphere radius="0.013" color="#111" position="-0.065 0.03 -0.07"></a-sphere>
-    </a-entity>
 
     <!-- ══════════════════════════════════════════════════
          ★ MANTA RAY
@@ -871,88 +819,9 @@
                    position="0 -0.04 0" opacity="0.7"></a-ellipsoid>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ SMALL FISH SCHOOL (generic colorful fish)
-    ══════════════════════════════════════════════════ -->
-    <a-entity id="fish-school"
-              swim="radius: 4.5; speed: 0.58; yOffset: -0.8; yAmplitude: 0.3; tilt: 8"
-              position="4 -0.8 0" color-boost scale="1.6 1.6 1.6">
-      <!-- 5 small fish offset around centre -->
-      <a-entity position=" 0.0  0.0  0.0" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.14" height="0.07" depth="0.06" color="#ffcc00"></a-ellipsoid>
-        <a-cone color="#ffaa00" radius-bottom="0.04" radius-top="0.01" height="0.07" position="0 0 0.08" rotation="-90 0 0"></a-cone>
-        <a-sphere radius="0.012" color="#000" position="-0.055 0.025 -0.06"></a-sphere>
-      </a-entity>
-      <a-entity position=" 0.18  0.06 -0.1" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.13" height="0.065" depth="0.055" color="#00ccff"></a-ellipsoid>
-        <a-cone color="#0099cc" radius-bottom="0.036" radius-top="0.01" height="0.065" position="0 0 0.075" rotation="-90 0 0"></a-cone>
-        <a-sphere radius="0.011" color="#000" position="-0.05 0.022 -0.055"></a-sphere>
-      </a-entity>
-      <a-entity position="-0.2  -0.07  0.1" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.12" height="0.06" depth="0.05" color="#ff6688"></a-ellipsoid>
-        <a-cone color="#dd4466" radius-bottom="0.033" radius-top="0.01" height="0.06" position="0 0 0.07" rotation="-90 0 0"></a-cone>
-        <a-sphere radius="0.011" color="#000" position="-0.048 0.02 -0.05"></a-sphere>
-      </a-entity>
-      <a-entity position=" 0.08 -0.1  0.15" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.14" height="0.07" depth="0.06" color="#88ff44"></a-ellipsoid>
-        <a-cone color="#66dd22" radius-bottom="0.04" radius-top="0.01" height="0.07" position="0 0 0.08" rotation="-90 0 0"></a-cone>
-        <a-sphere radius="0.012" color="#000" position="-0.055 0.025 -0.06"></a-sphere>
-      </a-entity>
-      <a-entity position="-0.1  0.1 -0.12" animal-info="clownfish" class="clickable">
-        <a-ellipsoid width="0.11" height="0.055" depth="0.048" color="#ff9933"></a-ellipsoid>
-        <a-cone color="#dd7711" radius-bottom="0.03" radius-top="0.01" height="0.055" position="0 0 0.065" rotation="-90 0 0"></a-cone>
-        <a-sphere radius="0.010" color="#000" position="-0.044 0.018 -0.046"></a-sphere>
-      </a-entity>
-    </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ JELLYFISH (×2)
-    ══════════════════════════════════════════════════ -->
-    <!-- Jellyfish 1 -->
-    <a-entity position="-3 1.5 -3"
-              swim="radius: 3; speed: 0.13; yOffset: 1.5; yAmplitude: 0.6; tilt: 0"
-              animal-info="jellyfish" color-boost class="clickable" scale="1.5 1.5 1.5">
-      <!-- Bell -->
-      <a-sphere radius="0.28" color="#ff88cc" opacity="0.55"
-                jelly-pulse="speed: 1.8"
-                material="transparent: true; side: double"></a-sphere>
-      <!-- Inner bell -->
-      <a-sphere radius="0.18" color="#ffaaee" opacity="0.35"
-                material="transparent: true"></a-sphere>
-      <!-- Tentacles -->
-      <a-cylinder color="#ffbbdd" radius="0.015" height="0.9" position=" 0.1 -0.65 0"
-                  material="opacity: 0.7; transparent: true"
-                  animation="property: rotation; from: 0 0 -5; to: 0 0 15; dir: alternate; loop: true; dur: 2000"></a-cylinder>
-      <a-cylinder color="#ffbbdd" radius="0.012" height="0.8" position="-0.1 -0.6  0"
-                  material="opacity: 0.65; transparent: true"
-                  animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2300"></a-cylinder>
-      <a-cylinder color="#ffbbdd" radius="0.012" height="0.85" position=" 0.0 -0.62 0.1"
-                  material="opacity: 0.70; transparent: true"
-                  animation="property: rotation; from: 0 0 -8; to: 0 0 8; dir: alternate; loop: true; dur: 1900"></a-cylinder>
-      <a-cylinder color="#ffbbdd" radius="0.01" height="0.75" position=" 0.0 -0.58 -0.1"
-                  material="opacity: 0.65; transparent: true"
-                  animation="property: rotation; from: 0 0 6; to: 0 0 -10; dir: alternate; loop: true; dur: 2100"></a-cylinder>
-    </a-entity>
 
-    <!-- Jellyfish 2 -->
-    <a-entity position="3 2.0 4"
-              swim="radius: 4; speed: 0.12; yOffset: 2.0; yAmplitude: 0.5; tilt: 0"
-              animal-info="jellyfish" color-boost class="clickable" scale="1.5 1.5 1.5">
-      <a-sphere radius="0.22" color="#88ccff" opacity="0.50"
-                jelly-pulse="speed: 2.0"
-                material="transparent: true; side: double"></a-sphere>
-      <a-sphere radius="0.14" color="#aaddff" opacity="0.32"
-                material="transparent: true"></a-sphere>
-      <a-cylinder color="#aaddff" radius="0.012" height="0.75" position=" 0.08 -0.52 0"
-                  material="opacity: 0.65; transparent: true"
-                  animation="property: rotation; from: 0 0 -6; to: 0 0 14; dir: alternate; loop: true; dur: 2200"></a-cylinder>
-      <a-cylinder color="#aaddff" radius="0.010" height="0.68" position="-0.08 -0.49 0"
-                  material="opacity: 0.60; transparent: true"
-                  animation="property: rotation; from: 0 0 6; to: 0 0 -11; dir: alternate; loop: true; dur: 2400"></a-cylinder>
-      <a-cylinder color="#aaddff" radius="0.010" height="0.7"  position=" 0.0 -0.50 0.08"
-                  material="opacity: 0.62; transparent: true"
-                  animation="property: rotation; from: 0 0 -9; to: 0 0 7; dir: alternate; loop: true; dur: 2000"></a-cylinder>
-    </a-entity>
+
 
     <!-- Panneaux fixes supprimés: un seul panneau dynamique est conserve par `animal-info`. -->
 
