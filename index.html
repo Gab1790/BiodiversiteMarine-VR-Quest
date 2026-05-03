@@ -109,31 +109,31 @@
     const ANIMALS = {
       dolphin: {
         name: "Grand Dauphin (Tursiops truncatus)",
-        text: "Mammifere marin tres intelligent vivant en groupes sociaux. Il communique avec des clics et des sifflements ultrasoniques, et utilise l'echolocalisation pour chasser et naviguer."
+        text: "Mammifère marin très intelligent vivant en groupes sociaux (pods). Il communique grâce à des clics et sifflements ultrasoniques (écholocalisation). Vitesse max : 55 km/h. Espérance de vie : 40-50 ans. Présent dans tous les océans tempérés et tropicaux."
       },
       whale: {
-        name: "Baleine a Bosse (Megaptera novaeangliae)",
-        text: "Geant des mers connu pour ses chants complexes et ses migrations de plusieurs milliers de kilometres entre zones d'alimentation et zones de reproduction."
+        name: "Baleine à Bosse (Megaptera novaeangliae)",
+        text: "Cétacé à fanons mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
       },
       shark: {
         name: "Grand Requin Blanc (Carcharodon carcharias)",
-        text: "Predateur apex essentiel a l'equilibre des oceans. Ses sens tres developpes lui permettent de detecter les proies a grande distance."
+        text: "Prédateur apex des océans, atteignant 6 m de long. Doté de 300 dents triangulaires renouvelables. Son sens de l'électroréception détecte les champs électriques à plusieurs mètres. Espèce vulnérable menacée par la pêche accidentelle."
       },
       turtle: {
         name: "Tortue Verte (Chelonia mydas)",
-        text: "Reptile marin herbivore qui joue un role important dans les herbiers marins. Les femelles reviennent souvent pondre sur leur plage de naissance."
+        text: "Reptile marin herbivore pouvant vivre plus de 80 ans. Les femelles reviennent pondre sur la plage de leur naissance (navigation magnétique). Elle joue un rôle clé dans les écosystèmes d'herbiers marins. Classée espèce en danger sur la liste rouge UICN."
       },
       octopus: {
         name: "Pieuvre Commune (Octopus vulgaris)",
-        text: "Cephalopode tres intelligent capable de changer de couleur et de texture pour se camoufler. Ses huit bras portent des ventouses sensibles."
+        text: "Mollusque céphalopode doté de 8 bras couverts de ventouses. Animal le plus intelligent parmi les invertébrés : il ouvre des bocaux, mémorise des parcours et joue. Peut changer de couleur et de texture en millisecondes. Durée de vie : 1-2 ans."
       },
       clownfish: {
         name: "Poisson Clown (Amphiprioninae)",
-        text: "Petit poisson vivant en symbiose avec les anemones de mer. Son mucus le protege des cellules urticantes de l'anemone."
+        text: "Petit poisson vivant en symbiose avec les anémones de mer. Son mucus le protège des cellules urticantes de l'anémone. Présent dans les eaux tropicales de l'Indo-Pacifique. Rendu célèbre par le film Le Monde de Nemo."
       },
       jellyfish: {
-        name: "Meduse (Scyphozoa)",
-        text: "Invertibre gelatineux compose en grande partie d'eau. Elle se deplace par pulsations et capture de petites proies avec ses tentacules urticants."
+        name: "Méduse (Scyphozoa)",
+        text: "Invertébré gélatineux composé à 95% d'eau. Elle se déplace par contractions rythmiques de son ombrelle. Ses tentacules urticants capturent zooplancton et petits poissons. Certaines méduses sont potentiellement immortelles."
       }
     };
 
@@ -161,38 +161,6 @@
         opacity: "material.opacity",
         roughness: "material.roughness",
         metalness: "material.metalness"
-      }
-    });
-
-    AFRAME.registerComponent("animal-info", {
-      schema: { type: "string", default: "" },
-      init() {
-        this.overlay = document.getElementById("info-overlay");
-        this.nameEl = document.getElementById("info-name");
-        this.textEl = document.getElementById("info-text");
-        this.pinned = false;
-
-        this.el.addEventListener("mouseenter", () => this.show(false));
-        this.el.addEventListener("mouseleave", () => {
-          if (!this.pinned) this.hide();
-        });
-        this.el.addEventListener("click", () => {
-          this.pinned = !this.pinned;
-          if (this.pinned) this.show(true);
-          else this.hide();
-        });
-      },
-      show(pinned) {
-        const d = ANIMALS[this.data];
-        if (!d) return;
-        this.pinned = Boolean(pinned);
-        this.nameEl.textContent = d.name;
-        this.textEl.textContent = d.text;
-        this.overlay.style.display = "block";
-      },
-      hide() {
-        this.pinned = false;
-        this.overlay.style.display = "none";
       }
     });
 
@@ -359,30 +327,6 @@
          CUSTOM COMPONENTS
     ══════════════════════════════════════════════════ -->
     <script>
-      /* ---- Animal info data ---- */
-      const ANIMALS = {
-        dolphin: {
-          name: "🐬 Grand Dauphin (Tursiops truncatus)",
-          text: "Mammifère marin très intelligent vivant en groupes sociaux (pods). Il communique grâce à des clics et sifflements ultrasoniques (écholocalisation). Vitesse max : 55 km/h. Espérance de vie : 40–50 ans. Présent dans tous les océans tempérés et tropicaux."
-        },
-        whale: {
-          name: "🐋 Baleine à Bosse (Megaptera novaeangliae)",
-          text: "Cétacé à fanons mesurant jusqu'à 16 m et pesant 30 tonnes. Célèbre pour ses chants complexes et ses acrobaties (breach). Elle migre chaque année entre zones d'alimentation polaires et zones de reproduction tropicales. Classée espèce vulnérable."
-        },
-        shark: {
-          name: "🦈 Grand Requin Blanc (Carcharodon carcharias)",
-          text: "Prédateur apex des océans, atteignant 6 m de long. Doté de 300 dents triangulaires renouvelables. Son sens de l'électroréception (ampoules de Lorenzini) détecte les champs électriques à plusieurs mètres. Espèce vulnérable menacée par la pêche accidentelle."
-        },
-        turtle: {
-          name: "🐢 Tortue Verte (Chelonia mydas)",
-          text: "Reptile marin herbivore pouvant vivre plus de 80 ans. Les femelles reviennent pondre sur la plage de leur naissance (navigation magnétique). Elle joue un rôle clé dans les écosystèmes d'herbiers marins. Classée espèce en danger sur la liste rouge UICN."
-        },
-        octopus: {
-          name: "🐙 Pieuvre Commune (Octopus vulgaris)",
-          text: "Mollusque céphalopode doté de 8 bras couverts de ventouses. Animal le plus intelligent parmi les invertébrés : il ouvre des bocaux, mémorise des parcours et joue. Peut changer de couleur et de texture en millisecondes pour se camoufler. Durée de vie : 1–2 ans."
-        }
-      };
-
       /* ---- Face camera component ---- */
       AFRAME.registerComponent('face-camera', {
         init() {
@@ -413,6 +357,9 @@
           this._panelOffsetX = 0.5;
           this._panelOffsetY = 0.5;
           this._interactionBound = false;
+          this._htmlOverlay = document.getElementById('info-overlay');
+          this._htmlName = document.getElementById('info-name');
+          this._htmlText = document.getElementById('info-text');
           this.bindInteractionListeners(this.el);
           this.bindInteractionTargets();
           if (this.el.hasLoaded) {
@@ -584,6 +531,12 @@
           clearTimeout(this._hideTimer);
           this.computeOffsets();
           this.setSharedText();
+          const d = ANIMALS[this.data];
+          if (d && this._htmlOverlay) {
+            this._htmlName.textContent = d.name;
+            this._htmlText.textContent = d.text;
+            this._htmlOverlay.style.display = 'block';
+          }
           if (!this.shared || !this.shared.panel) return;
           this.panelVisible = true;
           this.shared.activeEl = this.el;
@@ -593,6 +546,7 @@
           if (this._isIntersected) return;
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
+            if (this._htmlOverlay) this._htmlOverlay.style.display = 'none';
             this.hideSharedPanel();
           }, 3000);
         },
@@ -880,12 +834,12 @@
 
     <a-entity position="0 1.8 -4">
       <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88" material="transparent: true"></a-plane>
-      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/DejaVuSans.fnt"></a-text>
+      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/dejavu/DejaVu-sdf.fnt"></a-text>
     </a-entity>
 
     <a-entity position="4.5 1.8 -3.5" rotation="0 -40 0">
       <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85" material="transparent: true"></a-plane>
-      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/DejaVuSans.fnt"></a-text>
+      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/dejavu/DejaVu-sdf.fnt"></a-text>
     </a-entity>
     <!-- ══════════════════════════════════════════════════
          CAUSTIC LIGHT RAYS
