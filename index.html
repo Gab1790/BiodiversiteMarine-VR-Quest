@@ -131,10 +131,6 @@
         name: "Poisson Clown (Amphiprioninae)",
         text: "Petit poisson vivant en symbiose avec les anemones de mer. Son mucus le protege des cellules urticantes de l'anemone."
       },
-      ray: {
-        name: "Raie Manta (Mobula birostris)",
-        text: "Grande raie inoffensive qui semble voler dans l'eau. Elle filtre le plancton avec ses branchies et peut atteindre plusieurs metres d'envergure."
-      },
       jellyfish: {
         name: "Meduse (Scyphozoa)",
         text: "Invertibre gelatineux compose en grande partie d'eau. Elle se deplace par pulsations et capture de petites proies avec ses tentacules urticants."
@@ -342,8 +338,7 @@
       <a-asset-item id="shark-mtl" src="pack/OBJ/Shark.mtl"></a-asset-item>
       <a-asset-item id="whale-obj" src="pack/OBJ/Whale.obj"></a-asset-item>
       <a-asset-item id="whale-mtl" src="pack/OBJ/Whale.mtl"></a-asset-item>
-      <a-asset-item id="manta-obj" src="pack/OBJ/Manta%20ray.obj"></a-asset-item>
-      <a-asset-item id="manta-mtl" src="pack/OBJ/Manta%20ray.mtl"></a-asset-item>
+
       <a-asset-item id="fish1-obj" src="pack/OBJ/Fish1.obj"></a-asset-item>
       <a-asset-item id="fish1-mtl" src="pack/OBJ/Fish1.mtl"></a-asset-item>
       <a-asset-item id="fish2-obj" src="pack/OBJ/Fish2.obj"></a-asset-item>
@@ -385,10 +380,6 @@
         octopus: {
           name: "🐙 Pieuvre Commune (Octopus vulgaris)",
           text: "Mollusque céphalopode doté de 8 bras couverts de ventouses. Animal le plus intelligent parmi les invertébrés : il ouvre des bocaux, mémorise des parcours et joue. Peut changer de couleur et de texture en millisecondes pour se camoufler. Durée de vie : 1–2 ans."
-        },
-        ray: {
-          name: "🦩 Raie Manta (Mobula birostris)",
-          text: "Plus grande raie du monde : jusqu'à 7 m d'envergure et 3 tonnes. Se nourrit de plancton filtré par ses branchies. Possède le plus grand cerveau par rapport à la taille corporelle de tous les poissons. Classée espèce vulnérable en raison de sa faible reproduction."
         }
       };
 
@@ -826,9 +817,7 @@
       <a-entity obj-model="obj: #shark-obj; mtl: #shark-mtl" scale="0.78 0.78 0.78" rotation="0 180 0" animal-info="shark" class="clickable"></a-entity>
     </a-entity>
 
-    <a-entity ray-glide="speed: 0.28; scaleX: 12; scaleZ: 7" position="0 -1.0 0">
-      <a-entity obj-model="obj: #manta-obj; mtl: #manta-mtl" scale="0.3 0.3 0.3" rotation="0 180 0" animal-info="ray" class="clickable"></a-entity>
-    </a-entity>
+
 
     <a-entity swim="radius: 4.5; speed: 1.35; yOffset: -0.8; yAmplitude: 0.3; tilt: 8; darting: true" position="0 0 0">
       <a-entity obj-model="obj: #fish1-obj; mtl: #fish1-mtl" scale="0.065 0.065 0.065" rotation="0 180 0" position="0.5 0 0" animal-info="clownfish" class="clickable"></a-entity>
@@ -891,12 +880,12 @@
 
     <a-entity position="0 1.8 -4">
       <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88" material="transparent: true"></a-plane>
-      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/DejaVuSans.fnt"></a-text>
     </a-entity>
 
     <a-entity position="4.5 1.8 -3.5" rotation="0 -40 0">
       <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85" material="transparent: true"></a-plane>
-      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nRaie manta\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/DejaVuSans.fnt"></a-text>
     </a-entity>
     <!-- ══════════════════════════════════════════════════
          CAUSTIC LIGHT RAYS
@@ -916,277 +905,9 @@
                animation="property: opacity; from: 0.02; to: 0.07; dir: alternate; loop: true; dur: 2800"></a-plane>
     </a-entity>
 
-    <!-- ══════════════════════════════════════════════════
-         ★ DOLPHINS (×3)
-    ══════════════════════════════════════════════════ -->
-    <!-- Dolphin 1 -->
-    <a-entity swim="radius: 8; speed: 0.35; yOffset: -0.5; yAmplitude: 0.4; tilt: 10"
-              animal-info="dolphin" color-boost class="clickable"
-              position="8 0 0" scale="1.4 1.4 1.4">
-      <!-- Body -->
-      <a-ellipsoid width="0.5" height="0.28" depth="0.28" color="#5588aa"
-                   position="0 0 0"></a-ellipsoid>
-      <!-- Snout -->
-      <a-cone color="#4a7a99" radius-bottom="0.07" radius-top="0.02" height="0.28"
-              position="0 0 -0.38" rotation="90 0 0"></a-cone>
-      <!-- Dorsal fin -->
-      <a-cone color="#3a6a88" radius-bottom="0.07" radius-top="0.01" height="0.2"
-              position="0 0.19 0.05" rotation="0 0 -10"></a-cone>
-      <!-- Pectoral fins -->
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#4a7a99"
-                   position="-0.15 -0.06 -0.05" rotation="0 0 -35"></a-ellipsoid>
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#4a7a99"
-                   position="0.15 -0.06 -0.05" rotation="0 0 35"></a-ellipsoid>
-      <!-- Tail stock -->
-      <a-entity position="0 0 0.28" tail-wag="speed: 4; amplitude: 18">
-        <a-ellipsoid width="0.16" height="0.13" depth="0.16" color="#4a7a99"></a-ellipsoid>
-        <!-- Flukes -->
-        <a-ellipsoid width="0.04" height="0.08" depth="0.18" color="#3a6a88"
-                     position="-0.12 0 0.04" rotation="0 -20 0"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.08" depth="0.18" color="#3a6a88"
-                     position="0.12 0 0.04" rotation="0 20 0"></a-ellipsoid>
-      </a-entity>
-    </a-entity>
+    
 
-    <!-- Dolphin 2 (faster, smaller orbit) -->
-    <a-entity swim="radius: 6; speed: 0.45; yOffset: 0.4; yAmplitude: 0.5; tilt: 12"
-              animal-info="dolphin" color-boost class="clickable"
-              position="6 0.5 0" scale="1.4 1.4 1.4">
-      <a-ellipsoid width="0.48" height="0.26" depth="0.26" color="#4d7f9e"></a-ellipsoid>
-      <a-cone color="#426e8a" radius-bottom="0.065" radius-top="0.02" height="0.26"
-              position="0 0 -0.36" rotation="90 0 0"></a-cone>
-      <a-cone color="#325a75" radius-bottom="0.065" radius-top="0.01" height="0.18"
-              position="0 0.18 0.04" rotation="0 0 -8"></a-cone>
-      <a-ellipsoid width="0.04" height="0.13" depth="0.07" color="#426e8a"
-                   position="-0.14 -0.05 -0.04" rotation="0 0 -32"></a-ellipsoid>
-      <a-ellipsoid width="0.04" height="0.13" depth="0.07" color="#426e8a"
-                   position="0.14 -0.05 -0.04" rotation="0 0 32"></a-ellipsoid>
-      <a-entity position="0 0 0.27" tail-wag="speed: 5; amplitude: 20">
-        <a-ellipsoid width="0.14" height="0.12" depth="0.14" color="#426e8a"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.07" depth="0.16" color="#325a75"
-                     position="-0.11 0 0.03" rotation="0 -20 0"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.07" depth="0.16" color="#325a75"
-                     position="0.11 0 0.03" rotation="0 20 0"></a-ellipsoid>
-      </a-entity>
-    </a-entity>
-
-    <!-- Dolphin 3 (leaping higher) -->
-    <a-entity swim="radius: 10; speed: 0.29; yOffset: 1.0; yAmplitude: 1.2; tilt: 20"
-              animal-info="dolphin" color-boost class="clickable"
-              position="10 1 0" scale="1.4 1.4 1.4">
-      <a-ellipsoid width="0.52" height="0.29" depth="0.29" color="#6699bb"></a-ellipsoid>
-      <a-cone color="#5588aa" radius-bottom="0.07" radius-top="0.02" height="0.3"
-              position="0 0 -0.39" rotation="90 0 0"></a-cone>
-      <a-cone color="#4477aa" radius-bottom="0.07" radius-top="0.01" height="0.21"
-              position="0 0.20 0.05" rotation="0 0 -10"></a-cone>
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#5588aa"
-                   position="-0.15 -0.06 -0.05" rotation="0 0 -35"></a-ellipsoid>
-      <a-ellipsoid width="0.04" height="0.14" depth="0.08" color="#5588aa"
-                   position="0.15 -0.06 -0.05" rotation="0 0 35"></a-ellipsoid>
-      <a-entity position="0 0 0.29" tail-wag="speed: 3.5; amplitude: 16">
-        <a-ellipsoid width="0.17" height="0.14" depth="0.17" color="#5588aa"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.09" depth="0.19" color="#4477aa"
-                     position="-0.13 0 0.04" rotation="0 -20 0"></a-ellipsoid>
-        <a-ellipsoid width="0.04" height="0.09" depth="0.19" color="#4477aa"
-                     position="0.13 0 0.04" rotation="0 20 0"></a-ellipsoid>
-      </a-entity>
-    </a-entity>
-
-    <!-- ══════════════════════════════════════════════════
-         ★ WHALE (humpback)
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 14; speed: 0.14; yOffset: -0.5; yAmplitude: 0.6; tilt: 6"
-              animal-info="whale" color-boost class="clickable"
-              position="14 0 0" scale="1.25 1.25 1.25">
-      <!-- Main body (large elongated) -->
-      <a-ellipsoid width="4.0" height="1.1" depth="1.1" color="#2a3a55"></a-ellipsoid>
-      <!-- Head bulge -->
-      <a-ellipsoid width="1.0" height="1.0" depth="0.9" color="#2a3a55"
-                   position="0 0.05 -2.0"></a-ellipsoid>
-      <!-- Throat grooves -->
-      <a-box width="0.06" height="0.55" depth="1.0" color="#223044"
-             position="-0.15 -0.35 -1.8"></a-box>
-      <a-box width="0.06" height="0.55" depth="1.0" color="#223044"
-             position=" 0.15 -0.35 -1.8"></a-box>
-      <!-- Dorsal fin (small hump) -->
-      <a-cone color="#1a2a44" radius-bottom="0.22" radius-top="0.03" height="0.5"
-              position="0 0.7 0.8"></a-cone>
-      <!-- Long pectoral fins (characteristic of humpback) -->
-      <a-ellipsoid width="0.15" height="1.6" depth="0.35" color="#1e3048"
-                   position="-0.8 -0.3 -0.6" rotation="0 0 -50"></a-ellipsoid>
-      <a-ellipsoid width="0.15" height="1.6" depth="0.35" color="#1e3048"
-                   position=" 0.8 -0.3 -0.6" rotation="0 0  50"></a-ellipsoid>
-      <!-- Tail stock -->
-      <a-entity position="0 0 2.1" tail-wag="speed: 1.2; amplitude: 10">
-        <a-ellipsoid width="0.65" height="0.6" depth="0.55" color="#1a2a44"></a-ellipsoid>
-        <!-- Flukes -->
-        <a-ellipsoid width="0.12" height="0.3" depth="0.9" color="#1a2a44"
-                     position="-0.55 0 0.1" rotation="0 -25 0"></a-ellipsoid>
-        <a-ellipsoid width="0.12" height="0.3" depth="0.9" color="#1a2a44"
-                     position=" 0.55 0 0.1" rotation="0  25 0"></a-ellipsoid>
-      </a-entity>
-      <!-- Eye -->
-      <a-sphere radius="0.07" color="#111111" position="-0.52 0.2 -1.7"></a-sphere>
-    </a-entity>
-
-    <!-- ══════════════════════════════════════════════════
-         ★ GREAT WHITE SHARK
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 11; speed: 0.27; yOffset: -1.2; yAmplitude: 0.2; tilt: 4"
-              animal-info="shark" color-boost class="clickable"
-              position="11 -1 0" scale="1.35 1.35 1.35">
-      <!-- Body (torpedo) -->
-      <a-ellipsoid width="2.4" height="0.55" depth="0.55" color="#7a8a99"></a-ellipsoid>
-      <!-- Snout cone -->
-      <a-cone color="#8a9aaa" radius-bottom="0.18" radius-top="0.01" height="0.5"
-              position="0 0 -1.35" rotation="90 0 0"></a-cone>
-      <!-- Dorsal fin -->
-      <a-cone color="#6a7a88" radius-bottom="0.18" radius-top="0.02" height="0.55"
-              position="0 0.4 -0.2" rotation="0 0 -5"></a-cone>
-      <!-- Caudal fin stock -->
-      <a-entity position="0 0 1.25" tail-wag="speed: 3; amplitude: 15">
-        <!-- Heterocercal tail (upper lobe bigger) -->
-        <a-ellipsoid width="0.1" height="0.5" depth="0.5" color="#6a7a88"
-                     position="0 0.18 0.15" rotation="15 0 0"></a-ellipsoid>
-        <a-ellipsoid width="0.1" height="0.22" depth="0.3" color="#6a7a88"
-                     position="0 -0.12 0.1" rotation="-10 0 0"></a-ellipsoid>
-      </a-entity>
-      <!-- Pectoral fins -->
-      <a-ellipsoid width="0.08" height="0.5" depth="0.25" color="#6a7a88"
-                   position="-0.4 -0.1 -0.3" rotation="0 0 -55"></a-ellipsoid>
-      <a-ellipsoid width="0.08" height="0.5" depth="0.25" color="#6a7a88"
-                   position=" 0.4 -0.1 -0.3" rotation="0 0  55"></a-ellipsoid>
-      <!-- Pelvic fins -->
-      <a-ellipsoid width="0.06" height="0.25" depth="0.14" color="#6a7a88"
-                   position="-0.22 -0.2 0.4" rotation="0 0 -40"></a-ellipsoid>
-      <a-ellipsoid width="0.06" height="0.25" depth="0.14" color="#6a7a88"
-                   position=" 0.22 -0.2 0.4" rotation="0 0  40"></a-ellipsoid>
-      <!-- Eye -->
-      <a-sphere radius="0.045" color="#000000" position="-0.27 0.12 -1.0"></a-sphere>
-      <!-- White belly (lighter underside using a squashed sphere) -->
-      <a-ellipsoid width="1.8" height="0.15" depth="0.35" color="#d0d8dd"
-                   position="0 -0.2 0" opacity="0.85"></a-ellipsoid>
-    </a-entity>
-
-    <!-- ══════════════════════════════════════════════════
-         ★ SEA TURTLE
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 7; speed: 0.19; yOffset: -1.5; yAmplitude: 0.25; tilt: 5"
-              animal-info="turtle" color-boost class="clickable"
-              position="7 -1.5 0" scale="1.45 1.45 1.45">
-      <!-- Shell (carapace) -->
-      <a-ellipsoid width="0.55" height="0.22" depth="0.7" color="#3a6620"></a-ellipsoid>
-      <!-- Shell pattern -->
-      <a-ellipsoid width="0.35" height="0.24" depth="0.45" color="#4a7a28"
-                   position="0 0.01 0"></a-ellipsoid>
-      <!-- Head -->
-      <a-ellipsoid width="0.18" height="0.16" depth="0.22" color="#4a5a30"
-                   position="0 0.04 -0.42"></a-ellipsoid>
-      <!-- Snout -->
-      <a-cone color="#3a4a22" radius-bottom="0.06" radius-top="0.02" height="0.12"
-              position="0 0 -0.56" rotation="90 0 0"></a-cone>
-      <!-- Eye -->
-      <a-sphere radius="0.025" color="#110000" position="-0.07 0.07 -0.47"></a-sphere>
-      <!-- Front flippers -->
-      <a-ellipsoid width="0.06" height="0.1" depth="0.42" color="#3a5020"
-                   position="-0.38 -0.04 -0.14" rotation="0 -20 -15"
-                   animation="property: rotation; from: 0 -20 -15; to: 0 -20 -40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine">
-      </a-ellipsoid>
-      <a-ellipsoid width="0.06" height="0.1" depth="0.42" color="#3a5020"
-                   position=" 0.38 -0.04 -0.14" rotation="0  20 15"
-                   animation="property: rotation; from: 0 20 15; to: 0 20 40; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine">
-      </a-ellipsoid>
-      <!-- Rear flippers -->
-      <a-ellipsoid width="0.05" height="0.08" depth="0.28" color="#3a5020"
-                   position="-0.3 -0.04 0.3" rotation="0 20 -10"></a-ellipsoid>
-      <a-ellipsoid width="0.05" height="0.08" depth="0.28" color="#3a5020"
-                   position=" 0.3 -0.04 0.3" rotation="0 -20 10"></a-ellipsoid>
-    </a-entity>
-
-    <!-- ══════════════════════════════════════════════════
-         ★ OCTOPUS
-    ══════════════════════════════════════════════════ -->
-    <a-entity swim="radius: 5; speed: 0.16; yOffset: -2.5; yAmplitude: 0.4; tilt: 8"
-              animal-info="octopus" color-boost class="clickable"
-              position="5 -2.5 0" scale="1.5 1.5 1.5">
-      <!-- Mantle -->
-      <a-ellipsoid width="0.45" height="0.55" depth="0.4" color="#cc3300"
-                   jelly-pulse="speed: 1.0"></a-ellipsoid>
-      <!-- Eyes -->
-      <a-sphere radius="0.06" color="#ffee00" position="-0.15 0.1 -0.2">
-        <a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere>
-      </a-sphere>
-      <a-sphere radius="0.06" color="#ffee00" position=" 0.15 0.1 -0.2">
-        <a-sphere radius="0.035" color="#111" position="0 0 0.04"></a-sphere>
-      </a-sphere>
-      <!-- 8 tentacles (simple curved lines using cylinders) -->
-      <a-entity position="0 -0.28 0">
-        <a-cylinder color="#bb2200" radius="0.035" height="0.7"
-                    position="-0.18 -0.28 -0.1" rotation="25 0 -30"
-                    animation="property: rotation; from: 25 0 -30; to: 5 0 -55; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#bb2200" radius="0.032" height="0.65"
-                    position=" 0.18 -0.28 -0.1" rotation="25 0  30"
-                    animation="property: rotation; from: 25 0 30; to: 5 0 55; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#cc3300" radius="0.03" height="0.7"
-                    position="-0.1 -0.3  0.1" rotation="20 0 -15"
-                    animation="property: rotation; from: 20 0 -15; to: 40 0 -35; dir: alternate; loop: true; dur: 1600; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#cc3300" radius="0.03" height="0.7"
-                    position=" 0.1 -0.3  0.1" rotation="20 0  15"
-                    animation="property: rotation; from: 20 0 15; to: 40 0 35; dir: alternate; loop: true; dur: 1700; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#bb2200" radius="0.028" height="0.6"
-                    position="-0.2 -0.25  0.0" rotation="15 0 -50"
-                    animation="property: rotation; from: 15 0 -50; to: 35 0 -70; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#bb2200" radius="0.028" height="0.6"
-                    position=" 0.2 -0.25  0.0" rotation="15 0  50"
-                    animation="property: rotation; from: 15 0 50; to: 35 0 70; dir: alternate; loop: true; dur: 2100; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#dd4411" radius="0.025" height="0.55"
-                    position=" 0.0 -0.28 -0.2" rotation="30 0   5"
-                    animation="property: rotation; from: 30 0 5; to: 10 0 25; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"></a-cylinder>
-        <a-cylinder color="#dd4411" radius="0.025" height="0.55"
-                    position=" 0.0 -0.28  0.2" rotation="30 0  -5"
-                    animation="property: rotation; from: 30 0 -5; to: 10 0 -25; dir: alternate; loop: true; dur: 2300; easing: easeInOutSine"></a-cylinder>
-      </a-entity>
-    </a-entity>
-
-
-
-    <!-- ══════════════════════════════════════════════════
-         ★ MANTA RAY
-    ══════════════════════════════════════════════════ -->
-    <a-entity ray-glide="speed: 0.18; scaleX: 12; scaleZ: 7"
-              animal-info="ray" color-boost class="clickable"
-              position="0 -1.0 0" scale="1.4 1.4 1.4">
-      <!-- Central disc body (flat ellipsoid) -->
-      <a-ellipsoid width="0.6" height="0.12" depth="1.0" color="#223344"></a-ellipsoid>
-      <!-- Cephalic horns (head fins) -->
-      <a-ellipsoid width="0.06" height="0.1" depth="0.35" color="#1a2a38"
-                   position="-0.22 0.02 -0.5" rotation="0 -25 0"></a-ellipsoid>
-      <a-ellipsoid width="0.06" height="0.1" depth="0.35" color="#1a2a38"
-                   position=" 0.22 0.02 -0.5" rotation="0  25 0"></a-ellipsoid>
-      <!-- Left wing -->
-      <a-entity position="-0.8 0 0.1"
-                animation="property: rotation; from: 0 0 -5; to: 0 0 12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine">
-        <a-ellipsoid width="0.08" height="0.07" depth="1.5" color="#1d2e3f"
-                     position="-0.6 0 0" rotation="0 15 0"></a-ellipsoid>
-      </a-entity>
-      <!-- Right wing -->
-      <a-entity position="0.8 0 0.1"
-                animation="property: rotation; from: 0 0 5; to: 0 0 -12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine">
-        <a-ellipsoid width="0.08" height="0.07" depth="1.5" color="#1d2e3f"
-                     position="0.6 0 0" rotation="0 -15 0"></a-ellipsoid>
-      </a-entity>
-      <!-- Tail -->
-      <a-cylinder color="#1a2832" radius="0.04" height="1.2"
-                  position="0 0 0.85" rotation="90 0 0"></a-cylinder>
-      <!-- White belly spot -->
-      <a-ellipsoid width="0.45" height="0.06" depth="0.6" color="#aabbcc"
-                   position="0 -0.04 0" opacity="0.7"></a-ellipsoid>
-    </a-entity>
-
-
-
-
-
+    
     <!-- Panneaux fixes supprimés: un seul panneau dynamique est conserve par `animal-info`. -->
 
     <a-entity id="plankton">
