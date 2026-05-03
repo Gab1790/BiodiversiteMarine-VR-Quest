@@ -4,6 +4,8 @@ Expérience de réalité virtuelle WebXR immersive sur la biodiversité marine, 
 
 ## ✨ Fonctionnalités
 
+⚠️ **Animaux Sous licence** ⚠️ *Voir licence.txt dans root/models*
+
 - 🌊 **Monde sous-marin** complet : fond marin, coraux, algues, rayons de lumière (caustiques), bulles remontantes et plancton
 - 🐾 **7 espèces animées** :
   - 🐬 Grand Dauphin × 3 (nage en orbite, nageoire caudale animée)
@@ -17,6 +19,8 @@ Expérience de réalité virtuelle WebXR immersive sur la biodiversité marine, 
 - 📋 **Fiche explicative** pour chaque animal : regardez-le 1,5 s (fuse cursor) ou cliquez pour afficher sa fiche à côté de lui
 - 🗂️ **Panneau légende** flottant dans la scène
 
+⚠️ **Animaux Sous licence** ⚠️
+ 
 ## 🚀 Démarrage rapide
 
 ```bash
