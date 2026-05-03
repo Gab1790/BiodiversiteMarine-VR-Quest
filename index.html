@@ -350,24 +350,15 @@
           this.shared = this.ensureSharedPanel();
           this.panelVisible = false;
           this._isIntersected = false;
-          this._animalWorldPos = new THREE.Vector3();
-          this._cameraWorldPos = new THREE.Vector3();
-          this._panelDirection = new THREE.Vector3();
-          this._panelPos = new THREE.Vector3();
-          this._panelOffsetX = 0.5;
-          this._panelOffsetY = 0.5;
           this._interactionBound = false;
           this._htmlOverlay = document.getElementById('info-overlay');
           this._htmlName = document.getElementById('info-name');
           this._htmlText = document.getElementById('info-text');
           this.bindInteractionListeners(this.el);
           this.bindInteractionTargets();
-          if (this.el.hasLoaded) {
-            this.computeOffsets();
-          } else {
+          if (!this.el.hasLoaded) {
             this.el.addEventListener('loaded', () => {
               this.bindInteractionTargets();
-              this.computeOffsets();
             });
           }
         },
@@ -378,7 +369,6 @@
 
           const panel = document.createElement('a-entity');
           panel.setAttribute('visible', 'false');
-          panel.setAttribute('face-camera', '');
 
           const bg = document.createElement('a-plane');
           const bgWidthBase = 1.8;
@@ -412,7 +402,16 @@
           panel.appendChild(textEl);
 
           panel.object3D.renderOrder = 1100;
-          scene.appendChild(panel);
+          // Attach panel to camera so it acts as a fixed HUD, always visible in front of the user
+          const cameraEl = scene.querySelector('a-camera') || scene.querySelector('[camera]');
+          if (cameraEl) {
+            cameraEl.appendChild(panel);
+          } else {
+            scene.appendChild(panel);
+          }
+          // Fixed position relative to camera: slightly below centre, 1.8 m ahead
+          panel.setAttribute('position', '0 -0.35 -1.8');
+          panel.setAttribute('scale', '0.65 0.65 0.65');
 
           scene.__animalInfoShared = {
             panel,
@@ -426,12 +425,6 @@
             activeEl: null
           };
           return scene.__animalInfoShared;
-        },
-        computeOffsets() {
-          const bbox = new THREE.Box3().setFromObject(this.el.object3D);
-          const size = bbox.getSize(new THREE.Vector3());
-          this._panelOffsetX = Math.max(size.x, size.z) * 0.7 + 0.5;
-          this._panelOffsetY = size.y * 0.35 + 0.3;
         },
         hideSharedPanel() {
           if (!this.shared || !this.shared.panel) return;
@@ -482,32 +475,6 @@
             this.setSharedText();
           }
         },
-        tick() {
-          if (!this.shared || this.shared.activeEl !== this.el || !this.panelVisible) return;
-          const panel = this.shared.panel;
-          const camera = this.el.sceneEl.camera;
-          if (!camera) return;
-          this.el.object3D.getWorldPosition(this._animalWorldPos);
-          camera.getWorldPosition(this._cameraWorldPos);
-          this._panelDirection.copy(this._cameraWorldPos).sub(this._animalWorldPos);
-          this._panelDirection.y = 0;
-          if (this._panelDirection.lengthSq() < 0.0001) {
-            const e = camera.matrixWorld.elements;
-            this._panelDirection.set(e[0], 0, e[2]);
-          }
-          this._panelDirection.normalize();
-          this._panelPos.set(
-            this._animalWorldPos.x + this._panelDirection.x * this._panelOffsetX,
-            this._animalWorldPos.y + this._panelOffsetY,
-            this._animalWorldPos.z + this._panelDirection.z * this._panelOffsetX
-          );
-          panel.object3D.position.copy(this._panelPos);
-          // Update shared panel size/positions based on distance so far-away animals get larger panels
-          const camPos = this._cameraWorldPos;
-          const dist = camPos.distanceTo(this._animalWorldPos);
-          this.updateSharedLayout(dist);
-        },
-
         updateSharedLayout(dist) {
           if (!this.shared) return;
           const s = this.shared;
@@ -529,7 +496,6 @@
         },
         show() {
           clearTimeout(this._hideTimer);
-          this.computeOffsets();
           this.setSharedText();
           const d = ANIMALS[this.data];
           if (d && this._htmlOverlay) {
@@ -541,6 +507,7 @@
           this.panelVisible = true;
           this.shared.activeEl = this.el;
           this.shared.panel.setAttribute('visible', 'true');
+          this.updateSharedLayout(3.0); // use mid-range distance for stable HUD scale (scale ≈ 1.0)
         },
         hide() {
           if (this._isIntersected) return;
@@ -833,13 +800,13 @@
     </a-entity>
 
     <a-entity position="0 1.8 -4">
-      <a-plane width="3.2" height="1.8" color="#001a3a" opacity="0.88" material="transparent: true"></a-plane>
-      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="https://cdn.aframe.io/fonts/dejavu/DejaVu-sdf.fnt"></a-text>
+      <a-plane width="3.2" height="1.8" material="color: #001a3a; opacity: 0.88; transparent: true; shader: flat; depthWrite: false"></a-plane>
+      <a-text value="Bienvenue dans la\nBiodiversite Marine VR\n\nRegardez un animal pour\ndecouvrir sa fiche." align="center" color="#00d4ff" width="2.8" position="0 0 0.01" font="dejavu" material="shader: flat; transparent: true; depthTest: false; depthWrite: false"></a-text>
     </a-entity>
 
     <a-entity position="4.5 1.8 -3.5" rotation="0 -40 0">
-      <a-plane width="2.8" height="2.4" color="#001a3a" opacity="0.85" material="transparent: true"></a-plane>
-      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="https://cdn.aframe.io/fonts/dejavu/DejaVu-sdf.fnt"></a-text>
+      <a-plane width="2.8" height="2.4" material="color: #001a3a; opacity: 0.85; transparent: true; shader: flat; depthWrite: false"></a-plane>
+      <a-text value="Dauphin\nBaleine a bosse\nGrand requin blanc\nTortue verte\nPieuvre\nPoisson clown\nMeduse" align="left" color="#e0f4ff" width="2.5" position="-1.2 0 0.01" line-height="50" font="dejavu" material="shader: flat; transparent: true; depthTest: false; depthWrite: false"></a-text>
     </a-entity>
     <!-- ══════════════════════════════════════════════════
          CAUSTIC LIGHT RAYS
