@@ -417,8 +417,8 @@
           } else {
             scene.appendChild(panel);
           }
-          // Fixed position relative to camera: slightly below centre, 1.8 m ahead
-          panel.setAttribute('position', '0 -0.35 -1.8');
+          // Fixed position relative to camera: bottom of field of view, 1.8 m ahead
+          panel.setAttribute('position', '0 -0.85 -1.8');
           panel.setAttribute('scale', '0.65 0.65 0.65');
 
           scene.__animalInfoShared = {
