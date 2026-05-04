@@ -104,7 +104,7 @@
     }
   </style>
   <script>
-    window.speedMultiplier = 1;
+    window.speedMultiplier = window.speedMultiplier || 1;
 
     const ANIMALS = {
       dolphin: {
@@ -266,6 +266,8 @@
       }
     });
 
+    window.isVRActive = false;
+
     window.addEventListener("DOMContentLoaded", () => {
       const slider = document.getElementById("speed-slider");
       if (slider) {
@@ -278,6 +280,12 @@
         const soundEl = document.querySelector("#bg-sound");
         if (soundEl && soundEl.components.sound) soundEl.components.sound.playSound();
       }, { once: true });
+
+      const scene = document.querySelector("a-scene");
+      if (scene) {
+        scene.addEventListener("enter-vr", () => { window.isVRActive = true; });
+        scene.addEventListener("exit-vr",  () => { window.isVRActive = false; });
+      }
     });
   </script>
 </head>
@@ -498,16 +506,22 @@
           clearTimeout(this._hideTimer);
           this.setSharedText();
           const d = ANIMALS[this.data];
-          if (d && this._htmlOverlay) {
-            this._htmlName.textContent = d.name;
-            this._htmlText.textContent = d.text;
-            this._htmlOverlay.style.display = 'block';
+          if (window.isVRActive) {
+            // VR mode: show the 3D panel attached to the camera
+            if (this.shared && this.shared.panel) {
+              this.panelVisible = true;
+              this.shared.activeEl = this.el;
+              this.shared.panel.setAttribute('visible', 'true');
+              this.updateSharedLayout(3.0);
+            }
+          } else {
+            // Desktop mode: show the HTML overlay only
+            if (d && this._htmlOverlay) {
+              this._htmlName.textContent = d.name;
+              this._htmlText.textContent = d.text;
+              this._htmlOverlay.style.display = 'block';
+            }
           }
-          if (!this.shared || !this.shared.panel) return;
-          this.panelVisible = true;
-          this.shared.activeEl = this.el;
-          this.shared.panel.setAttribute('visible', 'true');
-          this.updateSharedLayout(3.0); // use mid-range distance for stable HUD scale (scale ≈ 1.0)
         },
         hide() {
           if (this._isIntersected) return;
@@ -660,6 +674,9 @@
           animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
         ></a-cursor>
       </a-camera>
+      <!-- VR controllers for Meta Quest (laser pointer interaction) -->
+      <a-entity laser-controls="hand: right" raycaster="objects: .clickable; far: 100"></a-entity>
+      <a-entity laser-controls="hand: left"  raycaster="objects: .clickable; far: 100"></a-entity>
     </a-entity>
 
     <a-light type="ambient" color="#0a2a4a" intensity="2.2"></a-light>
