@@ -6,7 +6,7 @@ Expérience de réalité virtuelle WebXR immersive sur la biodiversité marine, 
 
 ⚠️ **Animaux Sous licence** ⚠️ *Voir licence.txt dans root/models*
 
-- 🌊 **Monde sous-marin** complet : fond marin, coraux, algues, rayons de lumière (caustiques), bulles remontantes et plancton
+- 🌊 **Monde sous-marin** complet : fond marin, rochers, coraux branchus & en éventail, coraux cerveau, tubes de coraux, algues / kelp, oursins, étoiles de mer, anémones de mer, rayons de lumière (caustiques), bulles remontantes et plancton
 - 🐾 **7 espèces animées** :
   - 🐬 Grand Dauphin × 3 (nage en orbite, nageoire caudale animée)
   - 🐋 Baleine à Bosse (grande envergure, longues nageoires pectorales)
