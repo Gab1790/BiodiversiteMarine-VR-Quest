@@ -465,13 +465,16 @@
             this.shared.panel.setAttribute('visible', 'false');
           }
         },
+        _creditText(d) {
+          return d.name + ' fait par Poly by Google';
+        },
         setSharedText() {
           if (!this.shared) return;
           const d = ANIMALS[this.data];
           if (!d) return;
           this.shared.titleEl.setAttribute('value', d.name);
           this.shared.textEl.setAttribute('value', d.text);
-          this.shared.creditEl.setAttribute('value', d.name + ' fait par Poly by Google');
+          this.shared.creditEl.setAttribute('value', this._creditText(d));
         },
         bindInteractionListeners(target) {
           target.addEventListener('mouseenter', () => this.show());
@@ -546,7 +549,7 @@
             if (d && this._htmlOverlay) {
               this._htmlName.textContent = d.name;
               this._htmlText.textContent = d.text;
-              this._htmlCredit.textContent = d.name + ' fait par Poly by Google';
+              this._htmlCredit.textContent = this._creditText(d);
               this._htmlOverlay.style.display = 'block';
             }
           }
