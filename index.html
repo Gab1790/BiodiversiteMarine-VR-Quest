@@ -46,6 +46,13 @@
       font-size: 15px;
     }
 
+    #info-credit {
+      margin: 6px 0 0;
+      font-size: 11px;
+      color: #7ab8d4;
+      font-style: italic;
+    }
+
     #ui-hint,
     #speed-control {
       position: fixed;
@@ -298,6 +305,7 @@
   <div id="info-overlay">
     <h2 id="info-name"></h2>
     <p id="info-text"></p>
+    <small id="info-credit"></small>
   </div>
 
   <a-scene
@@ -362,6 +370,7 @@
           this._htmlOverlay = document.getElementById('info-overlay');
           this._htmlName = document.getElementById('info-name');
           this._htmlText = document.getElementById('info-text');
+          this._htmlCredit = document.getElementById('info-credit');
           this.bindInteractionListeners(this.el);
           this.bindInteractionTargets();
           if (!this.el.hasLoaded) {
@@ -409,6 +418,18 @@
           textEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
           panel.appendChild(textEl);
 
+          const creditEl = document.createElement('a-text');
+          const creditWidthBase = 1.35;
+          creditEl.setAttribute('color', '#7ab8d4');
+          creditEl.setAttribute('align', 'left');
+          creditEl.setAttribute('width', String(creditWidthBase));
+          creditEl.setAttribute('wrap-count', '36');
+          creditEl.setAttribute('line-height', '48');
+          creditEl.setAttribute('position', `-${(creditWidthBase/2 - 0.15).toFixed(2)} ${(-(bgHeightBase/2) + 0.14).toFixed(2)} 0.01`);
+          creditEl.setAttribute('font', 'dejavu');
+          creditEl.setAttribute('material', 'shader: flat; side: double; transparent: true; depthTest: false; depthWrite: false');
+          panel.appendChild(creditEl);
+
           panel.object3D.renderOrder = 1100;
           // Attach panel to camera so it acts as a fixed HUD, always visible in front of the user
           const cameraEl = scene.querySelector('a-camera') || scene.querySelector('[camera]');
@@ -430,6 +451,8 @@
             titleWidthBase,
             textEl,
             textWidthBase,
+            creditEl,
+            creditWidthBase,
             activeEl: null
           };
           return scene.__animalInfoShared;
@@ -448,6 +471,7 @@
           if (!d) return;
           this.shared.titleEl.setAttribute('value', d.name);
           this.shared.textEl.setAttribute('value', d.text);
+          this.shared.creditEl.setAttribute('value', d.name + ' fait par Poly by Google');
         },
         bindInteractionListeners(target) {
           target.addEventListener('mouseenter', () => this.show());
@@ -501,6 +525,9 @@
           s.titleEl.setAttribute('position', `${left.toFixed(3)} ${titleY.toFixed(3)} 0.01`);
           s.textEl.setAttribute('width', String(s.textWidthBase * scale));
           s.textEl.setAttribute('position', `${left.toFixed(3)} ${textY.toFixed(3)} 0.01`);
+          const creditY = -(bgH / 2) + 0.14;
+          s.creditEl.setAttribute('width', String(s.creditWidthBase * scale));
+          s.creditEl.setAttribute('position', `${left.toFixed(3)} ${creditY.toFixed(3)} 0.01`);
         },
         show() {
           clearTimeout(this._hideTimer);
@@ -519,6 +546,7 @@
             if (d && this._htmlOverlay) {
               this._htmlName.textContent = d.name;
               this._htmlText.textContent = d.text;
+              this._htmlCredit.textContent = d.name + ' fait par Poly by Google';
               this._htmlOverlay.style.display = 'block';
             }
           }
