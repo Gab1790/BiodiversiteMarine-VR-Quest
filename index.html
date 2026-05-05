@@ -274,7 +274,7 @@
     });
 
     AFRAME.registerComponent("coral-glow", {
-      schema: { speed: { default: 0.4 }, min: { default: 0.3 }, max: { default: 1.1 } },
+      schema: { speed: { type: "number", default: 0.4 }, min: { type: "number", default: 0.3 }, max: { type: "number", default: 1.1 } },
       init() {
         this.phase = Math.random() * Math.PI * 2;
         this.meshMaterials = [];
@@ -286,7 +286,7 @@
         this.el.object3D.traverse(obj => {
           if (!obj.isMesh) return;
           const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-          mats.forEach(m => { if (m.emissive) this.meshMaterials.push(m); });
+          mats.forEach(m => { if (m.emissive !== undefined) this.meshMaterials.push(m); });
         });
       },
       tick(t) {
