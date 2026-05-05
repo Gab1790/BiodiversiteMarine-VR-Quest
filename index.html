@@ -1055,11 +1055,6 @@
       <a-sphere position="7 -4.5 -5"    radius="2.8" scale="2.3 0.58 2.0" material="color: #0c2712; roughness: 1; metalness: 0"></a-sphere>
       <a-sphere position="-6 -4.55 5"   radius="2.3" scale="2.1 0.54 1.9" material="color: #0e2a15; roughness: 1; metalness: 0"></a-sphere>
       <a-sphere position="0 -4.45 -9"   radius="3.2" scale="2.6 0.62 2.2" material="color: #0b2511; roughness: 1; metalness: 0"></a-sphere>
-      <a-sphere position="-9 -4.5 -3"   radius="2.6" scale="2.4 0.56 2.0" material="color: #0f2d16; roughness: 1; metalness: 0"></a-sphere>
-      <a-sphere position="9 -4.5 8"     radius="2.7" scale="2.5 0.60 2.1" material="color: #0d2913; roughness: 1; metalness: 0"></a-sphere>
-      <a-sphere position="-2 -4.4 11"   radius="3.0" scale="2.2 0.65 1.9" material="color: #0a2110; roughness: 1; metalness: 0"></a-sphere>
-      <a-sphere position="11 -4.5 -9"   radius="2.9" scale="2.6 0.58 2.2" material="color: #0c2515; roughness: 1; metalness: 0"></a-sphere>
-      <a-sphere position="-12 -4.5 8"   radius="2.4" scale="2.0 0.53 1.8" material="color: #0e2b14; roughness: 1; metalness: 0"></a-sphere>
     </a-entity>
 
     <!-- Crêtes rocheuses sur les bords de la scène -->
@@ -1073,32 +1068,20 @@
 
     <!-- Rides de sable (sand ripples) — texture visuelle du fond sableux -->
     <a-entity id="sand-ripples" position="0 -3.97 0">
-      <a-box position="0 0.02 0"     width="14" height="0.04" depth="0.22" color="#0e2c16" roughness="1"></a-box>
-      <a-box position="0 0.03 0.55"  width="14" height="0.03" depth="0.18" color="#0f2e17" roughness="1"></a-box>
-      <a-box position="0 0.02 1.1"   width="13" height="0.04" depth="0.20" color="#0d2b15" roughness="1"></a-box>
-      <a-box position="0 0.03 1.65"  width="13" height="0.03" depth="0.18" color="#112f19" roughness="1"></a-box>
-      <a-box position="0 0.02 2.2"   width="12" height="0.04" depth="0.22" color="#0e2c16" roughness="1"></a-box>
-      <a-box position="0 0.03 2.75"  width="11" height="0.03" depth="0.18" color="#0f2d17" roughness="1" rotation="0 12 0"></a-box>
-      <a-box position="0 0.03 -0.55" width="14" height="0.03" depth="0.18" color="#0f2d17" roughness="1" rotation="0 5 0"></a-box>
-      <a-box position="0 0.02 -1.1"  width="13" height="0.04" depth="0.20" color="#0d2a15" roughness="1" rotation="0 -3 0"></a-box>
-      <a-box position="0 0.03 -1.65" width="13" height="0.03" depth="0.18" color="#112e18" roughness="1" rotation="0 8 0"></a-box>
-      <a-box position="0 0.02 -2.2"  width="12" height="0.04" depth="0.22" color="#0e2c16" roughness="1" rotation="0 -5 0"></a-box>
-      <a-box position="0 0.02 -2.75" width="11" height="0.04" depth="0.20" color="#0d2a15" roughness="1" rotation="0 -10 0"></a-box>
+      <a-box position="0 0.02 0"     width="14" height="0.04" depth="0.22" material="color: #0e2c16; roughness: 1"></a-box>
+      <a-box position="0 0.03 0.55"  width="14" height="0.03" depth="0.18" material="color: #0f2e17; roughness: 1"></a-box>
+      <a-box position="0 0.02 1.1"   width="13" height="0.04" depth="0.20" material="color: #0d2b15; roughness: 1"></a-box>
+      <a-box position="0 0.03 -0.55" width="14" height="0.03" depth="0.18" material="color: #0f2d17; roughness: 1" rotation="0 5 0"></a-box>
+      <a-box position="0 0.02 -1.1"  width="13" height="0.04" depth="0.20" material="color: #0d2a15; roughness: 1" rotation="0 -3 0"></a-box>
     </a-entity>
 
     <!-- Patches de coraux encroûtants (algues calcaires colorées) sur le sol -->
     <a-entity id="encrusting-corals" position="0 -3.96 0">
-      <a-cylinder color="#aa2244" radius="0.75" height="0.03" position="2.5 0 -2.5"  roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#cc3355" radius="0.45" height="0.025" position="3.1 0 -1.9" roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#882233" radius="0.35" height="0.025" position="1.9 0 -3.0" roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#bb5500" radius="0.65" height="0.03" position="-3.5 0 3.5"  roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#dd6600" radius="0.40" height="0.025" position="-4.0 0 2.9" roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#6600aa" radius="0.60" height="0.03" position="5.5 0 4.5"   roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#8800cc" radius="0.38" height="0.025" position="6.0 0 5.0"  roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#bbaa00" radius="0.55" height="0.03" position="-5.0 0 -5.5" roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#ddcc00" radius="0.35" height="0.025" position="-5.5 0 -4.9" roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#008855" radius="0.50" height="0.03" position="8.5 0 -2.5"  roughness="0.9" metalness="0"></a-cylinder>
-      <a-cylinder color="#00aa66" radius="0.33" height="0.025" position="9.0 0 -2.0" roughness="0.9" metalness="0"></a-cylinder>
+      <a-cylinder material="color: #aa2244; roughness: 0.9; metalness: 0" radius="0.75" height="0.03" position="2.5 0 -2.5"></a-cylinder>
+      <a-cylinder material="color: #bb5500; roughness: 0.9; metalness: 0" radius="0.65" height="0.03" position="-3.5 0 3.5"></a-cylinder>
+      <a-cylinder material="color: #6600aa; roughness: 0.9; metalness: 0" radius="0.60" height="0.03" position="5.5 0 4.5"></a-cylinder>
+      <a-cylinder material="color: #bbaa00; roughness: 0.9; metalness: 0" radius="0.55" height="0.03" position="-5.0 0 -5.5"></a-cylinder>
+      <a-cylinder material="color: #008855; roughness: 0.9; metalness: 0" radius="0.50" height="0.03" position="8.5 0 -2.5"></a-cylinder>
     </a-entity>
 
     <!-- Éponges tubulaires supplémentaires (tube sponges) -->
@@ -1106,19 +1089,16 @@
       <a-cylinder color="#9900cc" radius="0.065" height="0.75" position="0 0.37 0"></a-cylinder>
       <a-cylinder color="#aa00dd" radius="0.055" height="0.62" position="0.16 0.31 0"></a-cylinder>
       <a-cylinder color="#8800bb" radius="0.07"  height="0.85" position="-0.13 0.42 0.1"></a-cylinder>
-      <a-cylinder color="#bb00ee" radius="0.05"  height="0.58" position="0.06 0.29 0.16"></a-cylinder>
     </a-entity>
     <a-entity position="-10.5 -3.45 3.5">
       <a-cylinder color="#ff6600" radius="0.07"  height="0.80" position="0 0.40 0"></a-cylinder>
       <a-cylinder color="#ff7700" radius="0.058" height="0.65" position="0.14 0.32 0"></a-cylinder>
       <a-cylinder color="#ee5500" radius="0.065" height="0.70" position="-0.11 0.35 0.1"></a-cylinder>
-      <a-cylinder color="#ff8800" radius="0.05"  height="0.55" position="0.06 0.27 0.14"></a-cylinder>
     </a-entity>
     <a-entity position="6.5 -3.45 11.5">
       <a-cylinder color="#0055dd" radius="0.065" height="0.75" position="0 0.37 0"></a-cylinder>
       <a-cylinder color="#0066ee" radius="0.052" height="0.60" position="0.15 0.30 0"></a-cylinder>
       <a-cylinder color="#0044cc" radius="0.07"  height="0.85" position="-0.11 0.42 0.08"></a-cylinder>
-      <a-cylinder color="#0077ff" radius="0.047" height="0.52" position="0.07 0.26 0.15"></a-cylinder>
     </a-entity>
     <a-entity position="-7 -3.45 -12">
       <a-cylinder color="#ff3388" radius="0.062" height="0.70" position="0 0.35 0"></a-cylinder>
@@ -1141,29 +1121,21 @@
     </a-entity>
 
     <!-- Herbiers sous-marins denses (patches d'herbes de Posidonie) -->
-    <a-entity position="4 -2.45 3.5">
-      <a-plane width="0.055" height="1.20" material="color: #336622; opacity: 0.88; transparent: true; side: double" position="0 0 0"       animation="property: rotation; from: 0 0 -12; to: 0 0 12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.00" material="color: #2d5a1e; opacity: 0.85; transparent: true; side: double" position="0.15 0 0"    animation="property: rotation; from: 0 0 9; to: 0 0 -14; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.10" material="color: #3a6e25; opacity: 0.87; transparent: true; side: double" position="-0.15 0 0.1" animation="property: rotation; from: 0 0 -10; to: 0 0 10; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="0.90" material="color: #2e6020; opacity: 0.83; transparent: true; side: double" position="0.08 0 0.2"  animation="property: rotation; from: 0 0 6; to: 0 0 -16; dir: alternate; loop: true; dur: 2100; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.15" material="color: #337020; opacity: 0.86; transparent: true; side: double" position="-0.22 0 -0.12" animation="property: rotation; from: 0 0 -8; to: 0 0 12; dir: alternate; loop: true; dur: 2400; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.05" material="color: #2d5c1e; opacity: 0.84; transparent: true; side: double" position="0.28 0 0.15" animation="property: rotation; from: 0 0 10; to: 0 0 -12; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="0.95" material="color: #386820; opacity: 0.82; transparent: true; side: double" position="0 0 0.3"    animation="property: rotation; from: 0 0 -7; to: 0 0 13; dir: alternate; loop: true; dur: 2300; easing: easeInOutSine"></a-plane>
+    <!-- Patch à y=-4 (niveau du sol); chaque lame décalée de hauteur/2 vers le haut -->
+    <a-entity position="4 -4 3.5">
+      <a-plane width="0.055" height="1.20" material="color: #336622; opacity: 0.88; transparent: true; side: double" position="0 0.60 0"       animation="property: rotation; from: 0 0 -12; to: 0 0 12; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.00" material="color: #2d5a1e; opacity: 0.85; transparent: true; side: double" position="0.15 0.50 0"    animation="property: rotation; from: 0 0 9; to: 0 0 -14; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.10" material="color: #3a6e25; opacity: 0.87; transparent: true; side: double" position="-0.15 0.55 0.1" animation="property: rotation; from: 0 0 -10; to: 0 0 10; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine"></a-plane>
     </a-entity>
-    <a-entity position="-5 -2.45 -2">
-      <a-plane width="0.055" height="1.30" material="color: #35651f; opacity: 0.88; transparent: true; side: double" position="0 0 0"       animation="property: rotation; from: 0 0 -11; to: 0 0 11; dir: alternate; loop: true; dur: 2300; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.10" material="color: #2e5c1e; opacity: 0.85; transparent: true; side: double" position="0.16 0 0"    animation="property: rotation; from: 0 0 9; to: 0 0 -13; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.20" material="color: #3a7025; opacity: 0.87; transparent: true; side: double" position="-0.14 0 0.1" animation="property: rotation; from: 0 0 -9; to: 0 0 11; dir: alternate; loop: true; dur: 2600; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.00" material="color: #306222; opacity: 0.83; transparent: true; side: double" position="0.10 0 0.2"  animation="property: rotation; from: 0 0 7; to: 0 0 -15; dir: alternate; loop: true; dur: 2200; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.15" material="color: #337020; opacity: 0.86; transparent: true; side: double" position="-0.20 0 -0.12" animation="property: rotation; from: 0 0 -9; to: 0 0 13; dir: alternate; loop: true; dur: 2500; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="0.95" material="color: #2d5a1c; opacity: 0.82; transparent: true; side: double" position="0.24 0 -0.08" animation="property: rotation; from: 0 0 11; to: 0 0 -10; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"></a-plane>
+    <a-entity position="-5 -4 -2">
+      <a-plane width="0.055" height="1.30" material="color: #35651f; opacity: 0.88; transparent: true; side: double" position="0 0.65 0"       animation="property: rotation; from: 0 0 -11; to: 0 0 11; dir: alternate; loop: true; dur: 2300; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.10" material="color: #2e5c1e; opacity: 0.85; transparent: true; side: double" position="0.16 0.55 0"    animation="property: rotation; from: 0 0 9; to: 0 0 -13; dir: alternate; loop: true; dur: 1800; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.20" material="color: #3a7025; opacity: 0.87; transparent: true; side: double" position="-0.14 0.60 0.1" animation="property: rotation; from: 0 0 -9; to: 0 0 11; dir: alternate; loop: true; dur: 2600; easing: easeInOutSine"></a-plane>
     </a-entity>
-    <a-entity position="1 -2.45 8">
-      <a-plane width="0.055" height="1.25" material="color: #34641f; opacity: 0.88; transparent: true; side: double" position="0 0 0"       animation="property: rotation; from: 0 0 -10; to: 0 0 10; dir: alternate; loop: true; dur: 2100; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.05" material="color: #2c5a1c; opacity: 0.85; transparent: true; side: double" position="0.15 0 0"    animation="property: rotation; from: 0 0 8; to: 0 0 -12; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.15" material="color: #396c22; opacity: 0.87; transparent: true; side: double" position="-0.12 0 0.08" animation="property: rotation; from: 0 0 -11; to: 0 0 9; dir: alternate; loop: true; dur: 2700; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="0.95" material="color: #2e5e20; opacity: 0.83; transparent: true; side: double" position="0.08 0 0.18" animation="property: rotation; from: 0 0 6; to: 0 0 -14; dir: alternate; loop: true; dur: 1900; easing: easeInOutSine"></a-plane>
-      <a-plane width="0.055" height="1.05" material="color: #327020; opacity: 0.85; transparent: true; side: double" position="-0.20 0 -0.10" animation="property: rotation; from: 0 0 -8; to: 0 0 12; dir: alternate; loop: true; dur: 2400; easing: easeInOutSine"></a-plane>
+    <a-entity position="1 -4 8">
+      <a-plane width="0.055" height="1.25" material="color: #34641f; opacity: 0.88; transparent: true; side: double" position="0 0.62 0"       animation="property: rotation; from: 0 0 -10; to: 0 0 10; dir: alternate; loop: true; dur: 2100; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.05" material="color: #2c5a1c; opacity: 0.85; transparent: true; side: double" position="0.15 0.52 0"    animation="property: rotation; from: 0 0 8; to: 0 0 -12; dir: alternate; loop: true; dur: 2000; easing: easeInOutSine"></a-plane>
+      <a-plane width="0.055" height="1.15" material="color: #396c22; opacity: 0.87; transparent: true; side: double" position="-0.12 0.57 0.08" animation="property: rotation; from: 0 0 -11; to: 0 0 9; dir: alternate; loop: true; dur: 2700; easing: easeInOutSine"></a-plane>
     </a-entity>
   </a-scene>
 </body>
