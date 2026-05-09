@@ -177,9 +177,12 @@
         speed: { default: 0.4 },
         yOffset: { default: 0 },
         yAmplitude: { default: 0.3 },
-        tilt: { default: 8 },
+        tilt: { default: 0 },
         vary: { default: false },
-        darting: { default: false }
+        darting: { default: false },
+        rotate: { default: true },
+        billboard: { default: false },
+        pausing: { default: false }
       },
       init() {
         this.angle = Math.random() * Math.PI * 2;
@@ -187,9 +190,43 @@
         this.centerX = Number(pos.x) || 0;
         this.centerZ = Number(pos.z) || 0;
         this.baseY = (Number(pos.y) || 0) + this.data.yOffset;
+        this.camPos = new THREE.Vector3();
+        this.elPos = new THREE.Vector3();
+        this.isPaused = false;
+        this.pauseTimer = 0;
+        this.moveTimer = 8000 + Math.random() * 5000;
       },
       tick(t, dt) {
         const s = this.data;
+        const speedMult = window.speedMultiplier || 1;
+        
+        // Accurate gaze check: stop if any child has info and is being looked at
+        let isTargeted = false;
+        let child = this.el.firstElementChild;
+        while (child) {
+          if (child.isGazeTarget) { isTargeted = true; break; }
+          child = child.nextElementSibling;
+        }
+        if (isTargeted) return;
+
+        if (s.pausing) {
+          if (this.isPaused) {
+            this.pauseTimer -= dt * speedMult;
+            if (this.pauseTimer <= 0) {
+              this.isPaused = false;
+              this.moveTimer = 8000 + Math.random() * 5000;
+            }
+            return;
+          }
+
+          this.moveTimer -= dt * speedMult;
+          if (this.moveTimer <= 0) {
+            this.isPaused = true;
+            this.pauseTimer = 5000;
+            return;
+          }
+        }
+
         let speed = s.speed;
         let radius = s.radius;
 
@@ -202,14 +239,28 @@
           radius *= 0.75 + factor * 0.25;
         }
 
-        this.angle += (speed * dt * window.speedMultiplier) / 1000;
+        this.angle += (speed * dt * speedMult) / 1000;
         const x = this.centerX + Math.cos(this.angle) * radius;
         const z = this.centerZ + Math.sin(this.angle) * radius;
         const y = this.baseY + Math.sin(this.angle * 1.5) * s.yAmplitude;
-        const heading = Math.atan2(Math.cos(this.angle), -Math.sin(this.angle)) * 180 / Math.PI;
-        const pitch = Math.sin(this.angle * 1.5) * s.tilt;
         this.el.setAttribute("position", { x, y, z });
-        this.el.setAttribute("rotation", { x: pitch, y: heading, z: 0 });
+
+        if (s.rotate) {
+          if (s.billboard) {
+            const camera = this.el.sceneEl.camera;
+            if (camera) {
+              camera.getWorldPosition(this.camPos);
+              this.el.object3D.getWorldPosition(this.elPos);
+              const dx = this.camPos.x - this.elPos.x;
+              const dz = this.camPos.z - this.elPos.z;
+              const heading = Math.atan2(dx, dz) * 180 / Math.PI - 90;
+              this.el.setAttribute("rotation", { x: 0, y: heading, z: 0 });
+            }
+          } else {
+            const heading = Math.atan2(Math.cos(this.angle), -Math.sin(this.angle)) * 180 / Math.PI;
+            this.el.setAttribute("rotation", { x: 0, y: heading, z: 0 });
+          }
+        }
       }
     });
 
@@ -228,7 +279,7 @@
       },
       tick(t, dt) {
         const pos = this.el.getAttribute("position");
-        pos.y += this.data.speed * dt * window.speedMultiplier / 1000;
+        pos.y += this.data.speed * dt * (window.speedMultiplier || 1) / 1000;
         pos.x += Math.sin(t / 900 + pos.z) * 0.0015 * dt;
         if (pos.y > 5.8) this.reset();
         else this.el.setAttribute("position", pos);
@@ -242,7 +293,7 @@
         this.light = this.el.parentElement.querySelector("a-light");
       },
       tick(t, dt) {
-        this.acc += dt * window.speedMultiplier / 1000;
+        this.acc += dt * (window.speedMultiplier || 1) / 1000;
         const wave = Math.sin(this.acc * this.data.speed);
         const scale = 0.9 + wave * 0.1;
         this.el.setAttribute("scale", `${scale} ${scale} ${scale}`);
@@ -255,21 +306,47 @@
     });
 
     AFRAME.registerComponent("ray-glide", {
-      schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 } },
+      schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 }, rotate: { default: false } },
       init() {
         this.acc = Math.random() * Math.PI * 2;
         const pos = this.el.getAttribute("position") || { y: -1 };
         this.baseY = Number(pos.y) || -1;
+        this.isPaused = false;
+        this.pauseTimer = 0;
+        this.moveTimer = 10000 + Math.random() * 5000;
       },
       tick(t, dt) {
-        this.acc += dt * window.speedMultiplier * this.data.speed / 1000;
+        const speedMult = window.speedMultiplier || 1;
+        const isTargeted = this.el.isGazeTarget || (this.el.firstElementChild && this.el.firstElementChild.isGazeTarget);
+        if (isTargeted) return;
+
+        if (this.isPaused) {
+          this.pauseTimer -= dt * speedMult;
+          if (this.pauseTimer <= 0) {
+            this.isPaused = false;
+            this.moveTimer = 10000 + Math.random() * 5000;
+          }
+          return;
+        }
+
+        this.moveTimer -= dt * speedMult;
+        if (this.moveTimer <= 0) {
+          this.isPaused = true;
+          this.pauseTimer = 5000;
+          return;
+        }
+
+        this.acc += dt * speedMult * this.data.speed / 1000;
         const a = this.acc;
         const x = Math.sin(a) * this.data.scaleX;
         const z = Math.sin(a * 2) * this.data.scaleZ;
         const y = this.baseY + Math.sin(a * 0.7) * 0.45;
-        const heading = Math.atan2(Math.cos(a), -Math.cos(a * 2) * 2) * 180 / Math.PI;
         this.el.setAttribute("position", { x, y, z });
-        this.el.setAttribute("rotation", { x: 0, y: heading, z: 0 });
+
+        if (this.data.rotate) {
+          const heading = Math.atan2(Math.cos(a), -Math.cos(a * 2) * 2) * 180 / Math.PI;
+          this.el.setAttribute("rotation", { x: 0, y: heading, z: 0 });
+        }
       }
     });
 
@@ -396,12 +473,7 @@
           this._htmlText = document.getElementById('info-text');
           this._htmlCredit = document.getElementById('info-credit');
           this.bindInteractionListeners(this.el);
-          this.bindInteractionTargets();
-          if (!this.el.hasLoaded) {
-            this.el.addEventListener('loaded', () => {
-              this.bindInteractionTargets();
-            });
-          }
+          // Removed binding listeners to all children to prevent event conflicts
         },
         ensureSharedPanel() {
           const scene = this.el.sceneEl;
@@ -455,29 +527,17 @@
           panel.appendChild(creditEl);
 
           panel.object3D.renderOrder = 1100;
-          // Attach panel to camera so it acts as a fixed HUD, always visible in front of the user
           const cameraEl = scene.querySelector('a-camera') || scene.querySelector('[camera]');
           if (cameraEl) {
             cameraEl.appendChild(panel);
           } else {
             scene.appendChild(panel);
           }
-          // Fixed position relative to camera: bottom of field of view, 1.8 m ahead
           panel.setAttribute('position', '0 -0.85 -1.8');
           panel.setAttribute('scale', '0.65 0.65 0.65');
 
           scene.__animalInfoShared = {
-            panel,
-            bg,
-            bgWidthBase,
-            bgHeightBase,
-            titleEl,
-            titleWidthBase,
-            textEl,
-            textWidthBase,
-            creditEl,
-            creditWidthBase,
-            activeEl: null
+            panel, bg, bgWidthBase, bgHeightBase, titleEl, titleWidthBase, textEl, textWidthBase, creditEl, creditWidthBase, activeEl: null
           };
           return scene.__animalInfoShared;
         },
@@ -520,14 +580,8 @@
           });
         },
         bindInteractionTargets() {
-          if (this._interactionBound) return;
-          this._interactionBound = true;
+          // No longer binding to children to avoid precise collision issues with large OBJ models
           this.el.classList.add('clickable');
-          const children = this.el.querySelectorAll('*');
-          children.forEach((child) => {
-            child.classList.add('clickable');
-            this.bindInteractionListeners(child);
-          });
         },
         update() {
           if (this.shared && this.shared.activeEl === this.el) {
@@ -537,14 +591,12 @@
         updateSharedLayout(dist) {
           if (!this.shared) return;
           const s = this.shared;
-          // scale increases with distance (animals far away get larger panels)
           const base = 1.0;
           const scale = Math.min(2.5, Math.max(0.9, base + (dist - 3.0) * 0.18));
           const bgW = s.bgWidthBase * scale;
           const bgH = s.bgHeightBase * scale;
           s.bg.setAttribute('width', String(bgW));
           s.bg.setAttribute('height', String(bgH));
-          // compute left offset for text elements (small padding)
           const left = -(bgW / 2) + 0.12;
           const titleY = (bgH / 2) - 0.18;
           const textY = titleY - 0.42 * scale;
@@ -560,8 +612,11 @@
           clearTimeout(this._hideTimer);
           this.setSharedText();
           const d = ANIMALS[this.data];
+          
+          // Mark this SPECIFIC animal as looked at
+          this.el.isGazeTarget = true;
+
           if (window.isVRActive) {
-            // VR mode: show the 3D panel attached to the camera
             if (this.shared && this.shared.panel) {
               this.panelVisible = true;
               this.shared.activeEl = this.el;
@@ -569,7 +624,6 @@
               this.updateSharedLayout(3.0);
             }
           } else {
-            // Desktop mode: show the HTML overlay only
             if (d && this._htmlOverlay) {
               this._htmlName.textContent = d.name;
               this._htmlText.textContent = d.text;
@@ -579,7 +633,11 @@
           }
         },
         hide() {
+          // Resume movement IMMEDIATELY when the cursor leaves
+          this.el.isGazeTarget = false;
+
           if (this._isIntersected) return;
+
           clearTimeout(this._hideTimer);
           this._hideTimer = setTimeout(() => {
             if (this._htmlOverlay) this._htmlOverlay.style.display = 'none';
@@ -589,6 +647,7 @@
         remove() {
           clearTimeout(this._hideTimer);
           this.hideSharedPanel();
+          this.el.isGazeTarget = false;
         }
       });
 
@@ -631,88 +690,12 @@
         }
       });
 
-      /* ---- Smooth swim animation component ---- */
-      AFRAME.registerComponent('swim', {
-        schema: {
-          radius:    { default: 8 },
-          speed:     { default: 0.4 },
-          yOffset:   { default: 0 },
-          yAmplitude:{ default: 0.3 },
-          tilt:      { default: 8 }
-        },
-        init() {
-          this.angle = Math.random() * Math.PI * 2;
-          this.baseY = parseFloat(this.el.getAttribute('position').y) || 0;
-        },
-        tick(t, dt) {
-          const s = this.data;
-          this.angle += (s.speed * dt) / 1000;
-          const x  = Math.cos(this.angle) * s.radius;
-          const z  = Math.sin(this.angle) * s.radius;
-          const y  = this.baseY + Math.sin(this.angle * 1.5) * s.yAmplitude;
-          this.el.setAttribute('position', { x, y, z });
-          const heading = (Math.atan2(Math.cos(this.angle), -Math.sin(this.angle)) * 180 / Math.PI);
-          const pitch   = Math.sin(this.angle * 1.5) * s.tilt;
-          this.el.setAttribute('rotation', { x: pitch, y: heading, z: 0 });
-        }
-      });
-
       /* ---- Tail wag component ---- */
       AFRAME.registerComponent('tail-wag', {
         schema: { speed: { default: 3 }, amplitude: { default: 20 } },
         tick(t) {
           const angle = Math.sin(t / 1000 * this.data.speed) * this.data.amplitude;
           this.el.setAttribute('rotation', { x: 0, y: angle, z: 0 });
-        }
-      });
-
-      /* ---- Bubble rise ---- */
-      AFRAME.registerComponent('bubble-rise', {
-        schema: { speed: { default: 0.6 } },
-        init() {
-          this.startY = parseFloat(this.el.getAttribute('position').y) || -4;
-          this.el.setAttribute('position', {
-            x: (Math.random() - 0.5) * 20,
-            y: this.startY,
-            z: (Math.random() - 0.5) * 20
-          });
-        },
-        tick(t, dt) {
-          const pos = this.el.getAttribute('position');
-          pos.y += this.data.speed * dt / 1000;
-          if (pos.y > 6) {
-            pos.y = this.startY;
-            pos.x = (Math.random() - 0.5) * 20;
-            pos.z = (Math.random() - 0.5) * 20;
-          }
-          this.el.setAttribute('position', pos);
-        }
-      });
-
-      /* ---- Jellyfish pulse ---- */
-      AFRAME.registerComponent('jelly-pulse', {
-        schema: { speed: { default: 1.5 } },
-        tick(t) {
-          const s = 0.9 + Math.sin(t / 1000 * this.data.speed) * 0.1;
-          this.el.setAttribute('scale', `${s} ${s} ${s}`);
-        }
-      });
-
-      /* ---- Ray glide (figure-8) ---- */
-      AFRAME.registerComponent('ray-glide', {
-        schema: { speed: { default: 0.35 }, scaleX: { default: 10 }, scaleZ: { default: 6 } },
-        init() {
-          this.t0 = Math.random() * Math.PI * 2;
-          this.baseY = parseFloat(this.el.getAttribute('position').y) || -1;
-        },
-        tick(t) {
-          const a  = t / 1000 * this.data.speed + this.t0;
-          const x  = Math.sin(a) * this.data.scaleX;
-          const z  = Math.sin(a * 2) * this.data.scaleZ;
-          const y  = this.baseY + Math.sin(a * 0.7) * 0.4;
-          this.el.setAttribute('position', { x, y, z });
-          const heading = Math.atan2(Math.cos(a), -Math.cos(a * 2) * 2) * 180 / Math.PI;
-          this.el.setAttribute('rotation', { x: 0, y: heading, z: 0 });
         }
       });
     </script>
@@ -983,44 +966,43 @@
       <a-plane position="-2 0 0" rotation="0 -20 0" width="0.5" height="11" material="color: #88ccff; opacity: 0.05; transparent: true; side: double; shader: flat" animation="property: material.opacity; from: 0.03; to: 0.09; dir: alternate; loop: true; dur: 3400"></a-plane>
     </a-entity>
 
-    <a-entity swim="radius: 8; speed: 0.55; yOffset: 0.3; yAmplitude: 0.45; tilt: 10" position="0 0 0">
+    <a-entity swim="radius: 8; speed: 0.55; yOffset: 5.0; yAmplitude: 0.45; billboard: true" position="0 0 0">
       <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.36 0.36 0.36" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
     </a-entity>
-    <a-entity swim="radius: 6; speed: 0.75; yOffset: 0.7; yAmplitude: 0.35; tilt: 12" position="0 0 0">
+    <a-entity swim="radius: 13; speed: 0.75; yOffset: 1.0; yAmplitude: 0.35; billboard: true" position="0 0 0">
       <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.32 0.32 0.32" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
     </a-entity>
-    <a-entity swim="radius: 10; speed: 0.4; yOffset: 1.0; yAmplitude: 0.45; tilt: 8" position="0 0 0">
+    <a-entity swim="radius: 5; speed: 0.4; yOffset: -1.5; yAmplitude: 0.45; billboard: true" position="0 0 0">
       <a-entity obj-model="obj: #dolphin-obj; mtl: #dolphin-mtl" scale="0.34 0.34 0.34" rotation="0 180 0" animal-info="dolphin" class="clickable"></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 17; speed: 0.07; yOffset: -0.4; yAmplitude: 0.8; tilt: 5" position="0 0 0">
+    <a-entity swim="radius: 30; speed: 0.07; yOffset: 10.0; yAmplitude: 0.8; billboard: true" position="0 0 0">
       <a-entity obj-model="obj: #whale-obj; mtl: #whale-mtl" scale="3.1 3.1 3.1" rotation="0 180 0" animal-info="whale" class="clickable"></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 12; speed: 0.42; yOffset: -1.1; yAmplitude: 0.25; tilt: 4" position="0 0 0">
+    <a-entity swim="radius: 12; speed: 0.42; yOffset: -0.2; yAmplitude: 0.25; billboard: true" position="0 0 0">
       <a-entity obj-model="obj: #shark-obj; mtl: #shark-mtl" scale="0.78 0.78 0.78" rotation="0 180 0" animal-info="shark" class="clickable"></a-entity>
     </a-entity>
 
 
 
-    <a-entity swim="radius: 4.5; speed: 0.75; yOffset: -0.8; yAmplitude: 0.3; tilt: 8; darting: true" position="0 0 0">
+    <a-entity swim="radius: 4.5; speed: 0.75; yOffset: -2.5; yAmplitude: 0.3; darting: true; billboard: true; pausing: true" position="0 0 0">
       <a-entity obj-model="obj: #fish1-obj; mtl: #fish1-mtl" scale="0.065 0.065 0.065" rotation="0 180 0" position="0.5 0 0" animal-info="clownfish" class="clickable"></a-entity>
       <a-entity obj-model="obj: #fish2-obj; mtl: #fish2-mtl" scale="0.055 0.055 0.055" rotation="0 180 0" position="-0.5 0.2 0.3" animal-info="clownfish" class="clickable"></a-entity>
       <a-entity obj-model="obj: #fish3-obj; mtl: #fish3-mtl" scale="0.06 0.06 0.06" rotation="0 180 0" position="0 -0.3 -0.4" animal-info="clownfish" class="clickable"></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.45; yAmplitude: 0.25; tilt: 5" position="0 0 0">
+    <a-entity swim="radius: 7; speed: 0.12; yOffset: -1.6; yAmplitude: 0.25; billboard: true" position="0 0 0">
       <a-entity
         obj-model="obj: #turtle-obj; mtl: #turtle-mtl"
         scale="0.004 0.004 0.004"
         rotation="0 180 0"
         animal-info="turtle"
         class="clickable"
-        animation="property: rotation; from: 0 176 -2; to: 0 184 2; dir: alternate; loop: true; dur: 2400; easing: easeInOutSine"
       ></a-entity>
     </a-entity>
 
-    <a-entity swim="radius: 5; speed: 0.22; yOffset: -2.3; yAmplitude: 0.35; tilt: 8" position="0 0 0">
+    <a-entity swim="radius: 5; speed: 0.22; yOffset: -2.3; yAmplitude: 0.35; billboard: true" position="0 0 0">
       <a-entity
         obj-model="obj: #octopus-obj; mtl: #octopus-mtl"
         scale="0.08 0.08 0.08"
@@ -1038,7 +1020,7 @@
       <a-sphere color="#dd6600" radius="0.15"></a-sphere>
     </a-entity>
 
-    <a-entity position="-3 1.5 -3" swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.55; tilt: 0">
+    <a-entity position="-3 1.5 -3" swim="radius: 3; speed: 0.2; yOffset: 1.5; yAmplitude: 0.55; tilt: 0; rotate: true">
       <a-light type="point" color="#00ffff" intensity="1.4" distance="4"></a-light>
       <a-entity
         obj-model="obj: #jellyfish-obj; mtl: #jellyfish-mtl"
@@ -1050,7 +1032,7 @@
       ></a-entity>
     </a-entity>
 
-    <a-entity position="3 2.0 4" swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0">
+    <a-entity position="3 2.0 4" swim="radius: 4; speed: 0.18; yOffset: 2.0; yAmplitude: 0.5; tilt: 0; rotate: true">
       <a-light type="point" color="#88ccff" intensity="1.2" distance="4"></a-light>
       <a-entity
         obj-model="obj: #jellyfish-obj; mtl: #jellyfish-mtl"
